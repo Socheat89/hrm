@@ -77,7 +77,7 @@
                         <tr class="hover:bg-slate-50/50 transition-colors">
                             <td class="px-6 py-3 whitespace-nowrap">
                                 @if($employee->user->photo_path)
-                                    <img src="{{ asset('storage/'.$employee->user->photo_path) }}" class="h-10 w-10 rounded-full object-cover border border-slate-200 shadow-sm" alt="Photo">
+                                    <img src="{{ route('users.photo', $employee->user) }}" class="h-10 w-10 rounded-full object-cover border border-slate-200 shadow-sm" alt="Photo">
                                 @else
                                     <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold shadow-sm border border-blue-200">{{ strtoupper(substr($employee->user->name,0,1)) }}</div>
                                 @endif

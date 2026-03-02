@@ -61,16 +61,21 @@ class PanelController extends Controller
 
         $planName = CompanySetting::query()->first()?->current_plan_name ?? 'Standard';
 
+        $presentDays = $monthlySessions->count();
+        $lateCount   = $monthlySessions->where('late_minutes', '>', 0)->count();
+
         return view('employee.dashboard', [
-            'employee' => $employee,
-            'todayStatus' => $todayStatus,
-            'planName' => $planName,
-            'presentDays' => $monthlySessions->count(),
-            'lateCount' => $monthlySessions->where('late_minutes', '>', 0)->count(),
-            'leaveCount' => $monthlyLeaves,
+            'employee'      => $employee,
+            'todayStatus'   => $todayStatus,
+            'planName'      => $planName,
+            'presentDays'   => $presentDays,
+            'lateDays'      => $lateCount,
+            'absentDays'    => 0,
+            'leaveTaken'    => $monthlyLeaves,
             'overtimeHours' => round($monthlySessions->sum('overtime_minutes') / 60, 1),
-            'timelineLogs' => $timelineLogs,
-            'latestPayroll' => Payroll::query()->where('employee_id', $employee->id)->latest()->first(),
+            'timelineLogs'  => $timelineLogs,
+            'attendanceLogs' => collect(),
+            'payroll'       => Payroll::query()->where('employee_id', $employee->id)->latest()->first(),
         ]);
     }
 }

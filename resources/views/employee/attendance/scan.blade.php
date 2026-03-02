@@ -1,105 +1,201 @@
-<x-layouts.employee :show-page-banner="false">
-<style>
-.atd-wrap{max-width:500px;margin:0 auto;padding:.5rem 1rem 3rem;display:flex;flex-direction:column;gap:1.1rem}
-.atd-clock{text-align:center;font-size:clamp(2.4rem,10vw,4rem);font-weight:900;letter-spacing:-.04em;color:#0f3460;line-height:1;user-select:none}
-.atd-date{text-align:center;font-size:.82rem;color:#5a7fa8;margin-top:.25rem;font-weight:500}
+<x-layouts.employee page-title="Scan Attendance">
 
-/* ─── action buttons ─── */
-.atd-actions{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
-.atd-btn{border:none;border-radius:18px;padding:1.2rem .5rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;cursor:pointer;transition:transform .15s,box-shadow .15s;font-family:inherit}
-.atd-btn:active{transform:scale(.97)}
-.atd-btn.checkin{background:linear-gradient(135deg,#1a6b44,#27ae60);color:#fff;box-shadow:0 8px 24px rgba(27,107,68,.3)}
-.atd-btn.checkout{background:linear-gradient(135deg,#1a3a6b,#2d5fb3);color:#fff;box-shadow:0 8px 24px rgba(26,58,107,.3)}
-.atd-btn.disabled-btn{background:#e8ecf0;color:#aab4c0;cursor:not-allowed;box-shadow:none}
-.atd-btn .btn-icon{font-size:2rem;line-height:1}
-.atd-btn .btn-label{font-size:.88rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
-.atd-btn .btn-sub{font-size:.7rem;opacity:.8;font-weight:500}
-.atd-btn.busy{animation:pulse-btn 1s infinite}
-@keyframes pulse-btn{0%,100%{opacity:1}50%{opacity:.6}}
+    <style>
+        /* ── Clock ── */
+        .scan-clock-wrap { text-align: center; padding: 1.5rem 0 1.2rem; }
+        .scan-clock { font-family: 'Sora','Inter',sans-serif; font-size: 3rem; font-weight: 800;
+            color: #0d1f35; letter-spacing: -.06em; line-height: 1; }
+        .scan-date  { font-size: .88rem; color: #6b7d90; font-weight: 600; margin-top: .3rem; }
 
-/* ─── single scan button ─── */
-.atd-scan-btn{width:100%;border:none;border-radius:18px;padding:1.4rem 1rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;cursor:pointer;transition:transform .15s,box-shadow .15s;font-family:inherit;background:linear-gradient(135deg,#0f3460,#1565c0);color:#fff;box-shadow:0 8px 24px rgba(15,52,96,.3)}
-.atd-scan-btn:active{transform:scale(.98)}
-.atd-scan-btn .btn-icon{font-size:2.2rem;line-height:1}
-.atd-scan-btn .btn-label{font-size:1rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
-.atd-scan-btn .btn-sub{font-size:.76rem;opacity:.85;font-weight:500}
+        /* ── Alert banners ── */
+        .scan-alert { border-radius: 16px; padding: .9rem 1rem; display: flex; gap: .85rem;
+            align-items: flex-start; border: 1px solid transparent; margin-bottom: 1rem; }
+        .scan-alert-icon { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; }
+        .scan-alert-icon svg { width: 18px; height: 18px; }
+        .scan-alert.success { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+        .scan-alert.success .scan-alert-icon { background: #d1fae5; color: #059669; }
+        .scan-alert.error   { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+        .scan-alert.error   .scan-alert-icon { background: #ffe4e6; color: #e11d48; }
+        .scan-alert h6 { font-size: .88rem; font-weight: 800; margin: 0 0 .15rem; }
+        .scan-alert p  { font-size: .78rem; margin: 0; opacity: .9; }
 
-/* ─── type selector (overlays inside camera) ─── */
-.atd-type-sel{display:flex;gap:.6rem;padding:.55rem .8rem;background:rgba(8,24,52,.88)}
-.type-opt{flex:1;padding:.52rem .4rem;border:2px solid rgba(255,255,255,.2);border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;background:rgba(255,255,255,.07);color:#c8d8ee;font-family:inherit}
-.type-opt.active-in{border-color:#27ae60;background:rgba(27,174,96,.25);color:#7ae8a8}
-.type-opt.active-out{border-color:#4a90d9;background:rgba(74,144,217,.25);color:#88c4f5}
+        /* ── Big scan button ── */
+        .scan-btn {
+            width: 100%; border: 0; cursor: pointer;
+            border-radius: 24px; padding: 2rem 1.2rem;
+            display: flex; flex-direction: column; align-items: center; gap: .9rem;
+            color: #fff; position: relative; overflow: hidden;
+            box-shadow: 0 12px 36px rgba(0,0,0,.18);
+            transition: transform .18s, box-shadow .18s, filter .18s;
+        }
+        .scan-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+        .scan-btn:active { transform: scale(.98); }
+        .scan-btn .sb-qr-ring {
+            width: 80px; height: 80px; border-radius: 22px;
+            background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.25);
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(6px);
+        }
+        .scan-btn .sb-qr-ring svg { width: 44px; height: 44px; }
+        .scan-btn h2 { font-family:'Sora','Inter',sans-serif; font-size: 1.5rem; font-weight: 800;
+            letter-spacing: -.02em; margin: 0; }
+        .scan-btn .sb-sub {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(0,0,0,.2); border: 1px solid rgba(255,255,255,.15);
+            border-radius: 999px; padding: .35rem .85rem; font-size: .8rem; font-weight: 700;
+        }
+        .scan-btn .sb-sub svg { width: 15px; height: 15px; }
+        .scan-btn::before { content:''; position:absolute; top:-40px; right:-40px;
+            width:160px; height:160px; background:rgba(255,255,255,.1); border-radius:50%; }
+        .scan-btn::after  { content:''; position:absolute; bottom:-30px; left:-20px;
+            width:120px; height:120px; background:rgba(0,0,0,.08); border-radius:50%; }
 
-/* ─── camera box ─── */
-.qr-box{border-radius:18px;overflow:hidden;border:2px solid #c5d8ef;background:#000;display:none;position:relative}
-.qr-box.visible{display:block}
-.qr-box #qrReader video{width:100%!important;height:280px!important;object-fit:cover;display:block}
-.qr-aim{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.qr-aim svg{width:180px;height:180px;opacity:.7}
-.qr-status-bar{background:rgba(3,26,46,.85);color:#7db8f5;text-align:center;font-size:.82rem;font-weight:600;padding:.45rem .8rem}
+        /* ── Camera box ── */
+        .qr-camera-box {
+            border-radius: 24px; overflow: hidden;
+            background: #000;
+            height: 72svh; max-height: 560px; min-height: 340px;
+            box-shadow: 0 16px 48px rgba(0,0,0,.4);
+            border: 3px solid #1e3050;
+            position: relative;
+        }
+        /* lib injects div > div > video — force ALL of them to fill the box */
+        #qrReader,
+        #qrReader > div,
+        #qrReader > div > div {
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            padding: 0 !important;
+        }
+        #qrReader video {
+            position: absolute !important;
+            inset: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            display: block !important;
+        }
+        #qr-shaded-region,
+        #qrReader img,
+        #qrReader canvas { display: none !important; }
 
-/* ─── result cards ─── */
-.atd-result{border-radius:16px;padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:.8rem;animation:slide-in .3s ease}
-.atd-result.success{background:#e8f5e9;border:1px solid #a5d6a7}
-.atd-result.error{background:#fdecea;border:1px solid #ef9a9a}
-.atd-result-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
-.success .atd-result-icon{background:#c8e6c9}
-.error .atd-result-icon{background:#ffcdd2}
-.atd-result-body h6{margin:0 0 .2rem;font-weight:800;font-size:.93rem}
-.atd-result-body p{margin:0;font-size:.8rem;color:#555;line-height:1.4}
-.success .atd-result-body h6{color:#1b5e20}
-.error .atd-result-body h6{color:#b71c1c}
-@keyframes slide-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        .qr-overlay { position: absolute; inset: 0; z-index: 20; pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-between; padding: 1.1rem; }
 
-.atd-msg{font-size:.83rem;padding:.5rem .9rem;border-radius:10px;text-align:center;display:none}
-.atd-msg.visible{display:block}
-.atd-msg.info{background:#e3edf8;color:#1a3a6b}
-.atd-msg.danger{background:#fdecea;color:#b71c1c}
-.atd-msg.ok{background:#e8f5e9;color:#1b5e20}
+        .qr-status-bar {
+            background: rgba(0,0,0,.65); backdrop-filter: blur(10px);
+            border-radius: 12px; padding: .6rem 1rem; text-align: center;
+            border: 1px solid rgba(255,255,255,.1);
+        }
+        .qr-status-bar p { color: #fff; font-size: .8rem; font-weight: 600; margin: 0; }
 
-/* ─── summary ─── */
-.atd-summary-card{background:#fff;border:1px solid #dde8f4;border-radius:16px;overflow:hidden}
-.atd-summary-header{background:#f0f6ff;padding:.55rem 1rem;font-size:.75rem;font-weight:700;color:#2d5086;text-transform:uppercase;letter-spacing:.06em}
-.atd-summary-row{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-bottom:1px solid #eaf1fb}
-.atd-summary-row:last-child{border-bottom:none}
-.atd-summary-badge{width:28px;height:28px;border-radius:50%;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.badge-in{background:#e8f5e9;color:#1b6b31}
-.badge-out{background:#e3eaf5;color:#2d5086}
-.badge-miss{background:#f5f5f5;color:#b0bec5}
-.atd-summary-row .row-label{font-size:.82rem;color:#5a7fa8;font-weight:600;flex:1}
-.atd-summary-row .row-time{font-size:.88rem;font-weight:800;color:#1b6b31}
-.atd-summary-row .row-miss{font-size:.82rem;color:#cdd5df}
+        .qr-frame {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            width: 220px; height: 220px;
+            border: 2px solid rgba(255,255,255,.35); border-radius: 12px;
+        }
+        .qr-frame::before, .qr-frame::after,
+        .qr-frame span::before, .qr-frame span::after {
+            content: ''; position: absolute;
+            width: 24px; height: 24px; border-color: #34d399; border-style: solid;
+        }
+        .qr-frame::before  { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+        .qr-frame::after   { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+        .qr-frame span::before { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+        .qr-frame span::after  { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
 
-/* ─── stats ─── */
-.atd-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}
-.atd-stat-box{background:#f5f9ff;border:1px solid #dde8f5;border-radius:12px;padding:.55rem .5rem;text-align:center}
-.atd-stat-box .n{font-size:1.15rem;font-weight:900;color:#0f3460}
-.atd-stat-box .l{font-size:.66rem;color:#7a96b5;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.atd-stat-box.late .n{color:#e65100}
-.atd-stat-box.ot .n{color:#1565c0}
-</style>
+        .qr-type-sel {
+            pointer-events: auto;
+            background: rgba(0,0,0,.8); backdrop-filter: blur(14px);
+            border-radius: 18px; padding: 6px; border: 1px solid rgba(255,255,255,.1);
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+        }
+        .qr-type-btn {
+            border: 0; border-radius: 13px; padding: .75rem .5rem;
+            font-size: .78rem; font-weight: 800; cursor: pointer; transition: all .18s;
+            background: rgba(255,255,255,.1); color: rgba(255,255,255,.65); letter-spacing: .04em;
+        }
+        .qr-type-btn:hover { background: rgba(255,255,255,.2); }
+        .qr-type-btn.active-in  { background: #059669; color: #fff; box-shadow: 0 4px 12px rgba(5,150,105,.4); }
+        .qr-type-btn.active-out { background: #2563eb; color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,.4); }
 
-<div class="atd-wrap">
+        .qr-cancel {
+            position: absolute; top: 1rem; right: 1rem; z-index: 30;
+            width: 36px; height: 36px; border-radius: 50%; border: 0; cursor: pointer;
+            background: rgba(0,0,0,.55); color: #fff; backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center; pointer-events: auto;
+        }
+        .qr-cancel svg { width: 18px; height: 18px; }
 
-    {{-- Clock --}}
-    <div>
-        <div class="atd-clock" id="liveClock">--:--:--</div>
-        <div class="atd-date"  id="liveDate"></div>
+        /* ── All done ── */
+        .all-done-card {
+            background: #ecfdf5; border: 1px solid #a7f3d0;
+            border-radius: 22px; padding: 3rem 1.5rem; text-align: center;
+        }
+        .all-done-icon { width: 72px; height: 72px; border-radius: 50%;
+            background: #d1fae5; color: #059669;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+        .all-done-icon svg { width: 36px; height: 36px; }
+        .all-done-card h2 { font-family:'Sora','Inter',sans-serif; font-size: 1.5rem;
+            font-weight: 800; color: #064e3b; margin: 0 0 .5rem; }
+        .all-done-card p { font-size: .85rem; color: #047857; margin: 0; line-height: 1.6; }
+
+        /* ── Activity timeline ── */
+        .activity-card { background: #fff; border: 1px solid #dce8f6; border-radius: 20px;
+            overflow: hidden; box-shadow: 0 2px 12px rgba(13,31,53,.06); }
+        .activity-head { padding: .85rem 1.1rem; border-bottom: 1px solid #f0f5fa; background: #f8fbff; }
+        .activity-head h3 { font-size: .75rem; font-weight: 800; color: #546270; margin: 0;
+            text-transform: uppercase; letter-spacing: .07em; }
+        .activity-row { display: flex; align-items: center; gap: .85rem;
+            padding: .85rem 1.1rem; border-bottom: 1px solid #f5f8fc; transition: background .12s; }
+        .activity-row:last-child { border-bottom: 0; }
+        .activity-row:hover { background: #f8fbff; }
+        .act-icon-wrap { width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; }
+        .act-icon-wrap svg { width: 17px; height: 17px; }
+        .act-icon-wrap.in      { background: #dcfce7; color: #15803d; }
+        .act-icon-wrap.out     { background: #dbeafe; color: #1d4ed8; }
+        .act-icon-wrap.pending { background: #f1f5f9; color: #94a3b8; }
+        .act-label { font-size: .84rem; font-weight: 700; color: #0d1f35; }
+        .act-sub   { font-size: .71rem; color: #8294a8; margin-top: .1rem; }
+        .act-time  { font-family:'Sora','Inter',sans-serif; font-size: .92rem; font-weight: 800; color: #0d1f35; }
+        .act-status { font-size: .68rem; font-weight: 700; margin-top: .1rem; }
+        .act-status.late { color: #d97706; }
+        .act-status.on-time { color: #16a34a; }
+
+        #scanMsg { border-radius: 14px; padding: .85rem 1rem; font-size: .82rem; font-weight: 600; text-align: center; }
+        #scanMsg.info  { background: #eff6ff; color: #1d4ed8; }
+        #scanMsg.error { background: #fff1f2; color: #be123c; }
+    </style>
+
+<div style="max-width:520px;margin:0 auto;padding-bottom:5rem">
+
+    <!-- Clock -->
+    <div class="scan-clock-wrap" id="scanHeader">
+        <div class="scan-clock" id="liveClock">--:--:--</div>
+        <div class="scan-date" id="liveDate"></div>
     </div>
 
-    {{-- Flash result --}}
+    <!-- Flash: scan result -->
     @if(session('scan_result'))
         @php $res = session('scan_result'); @endphp
-        <div class="atd-result {{ $res['type'] }}">
-            <div class="atd-result-icon">{{ $res['type']==='success' ? '✅' : '❌' }}</div>
-            <div class="atd-result-body">
-                @if($res['type']==='success')
-                    <h6>{{ $res['scan_type'] ?? 'Scan' }} Recorded</h6>
-                    <p>{{ $res['time'] ?? '' }} &middot; <strong>{{ $res['status'] ?? 'On Time' }}</strong>
-                        @if(!empty($res['distance'])) &middot; {{ $res['distance'] }} from branch @endif
-                    </p>
+        <div class="scan-alert {{ $res['type'] === 'success' ? 'success' : 'error' }}" id="scanResult">
+            <div class="scan-alert-icon">
+                @if($res['type'] === 'success')
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 @else
-                    <h6>Scan Rejected</h6>
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                @endif
+            </div>
+            <div>
+                <h6>{{ $res['type'] === 'success' ? (($res['scan_type'] ?? 'Scan') . ' Recorded') : 'Scan Rejected' }}</h6>
+                @if($res['type'] === 'success')
+                    <p>{{ $res['time'] ?? '' }}{{ !empty($res['status']) ? ' · ' . $res['status'] : '' }}{{ !empty($res['distance']) ? ' · ' . $res['distance'] . ' away' : '' }}</p>
+                @else
                     <p>{{ $res['message'] ?? 'Could not record attendance.' }}</p>
                 @endif
             </div>
@@ -107,115 +203,127 @@
     @endif
 
     @if($errors->any())
-        <div class="atd-result error">
-            <div class="atd-result-icon">❌</div>
-            <div class="atd-result-body"><h6>Error</h6><p>{{ $errors->first() }}</p></div>
+        <div class="scan-alert error" id="scanResult">
+            <div class="scan-alert-icon">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            </div>
+            <div><h6>Error</h6><p>{{ $errors->first() }}</p></div>
         </div>
     @endif
 
-    {{-- Hidden form --}}
+    <!-- Hidden form -->
     <form method="POST" action="{{ route('employee.attendance.store') }}" id="scanForm" style="display:none">
         @csrf
         <input type="hidden" name="scan_type"   id="scanTypeInput" value="">
-        <input type="hidden" name="device_info" id="deviceInfo"    value="">
-        <input type="hidden" name="qr_token"    id="qrTokenInput"  value="">
-        <input type="hidden" name="latitude"    id="latInput"      value="">
-        <input type="hidden" name="longitude"   id="lngInput"      value="">
+        <input type="hidden" name="device_info" id="deviceInfo" value="">
+        <input type="hidden" name="qr_token"    id="qrTokenInput" value="">
+        <input type="hidden" name="latitude"    id="latInput" value="">
+        <input type="hidden" name="longitude"   id="lngInput" value="">
     </form>
 
+    <!-- Scan area -->
     @if(!$allDone)
-    {{-- Single scan button --}}
-    @php
-        $ciTypes   = ['morning_in','lunch_in'];
-        $autoLabel = in_array($autoDefault, $ciTypes) ? 'Check-In' : 'Check-Out';
-        $autoEmoji = in_array($autoDefault, $ciTypes) ? '🟢' : '🔵';
-    @endphp
-    <button type="button" class="atd-scan-btn" id="btnScan">
-        <span class="btn-icon">📷</span>
-        <span class="btn-label">Scan Attendance</span>
-        <span class="btn-sub" id="btnScanSub">Auto: {{ $autoEmoji }} {{ $autoLabel }}</span>
-    </button>
+        @php
+            $ciTypes = ['morning_in', 'lunch_in'];
+            $isCheckIn = in_array($autoDefault, $ciTypes);
+            $actionLabel = $isCheckIn ? 'Check In' : 'Check Out';
+            $btnGradient = $isCheckIn
+                ? 'linear-gradient(135deg,#059669,#0f766e)'
+                : 'linear-gradient(135deg,#2563eb,#1d4ed8)';
+        @endphp
+
+        <button type="button" id="btnScan" class="scan-btn mb-3" style="background:{{ $btnGradient }}">
+            <div class="sb-qr-ring">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/>
+                    <line x1="16" y1="16" x2="21" y2="16"/><line x1="16" y1="19" x2="19" y2="19"/><line x1="19" y1="16" x2="19" y2="21"/>
+                </svg>
+            </div>
+            <h2>Scan QR Code</h2>
+            <span class="sb-sub" id="btnScanSub">
+                @if($isCheckIn)
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14"/></svg>
+                @else
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
+                @endif
+                {{ $actionLabel }}
+            </span>
+        </button>
+
+        <!-- Camera box (hidden initially) -->
+        <div id="qrBox" class="qr-camera-box mb-3" style="display:none">
+            <div id="qrReader"></div>
+            <div class="qr-overlay">
+                <div class="qr-status-bar">
+                    <p id="qrStatus">Align QR code within frame</p>
+                </div>
+                <div class="qr-frame"><span></span></div>
+                <div class="qr-type-sel" id="typeSel">
+                    @if($nextCheckIn)
+                    <button type="button" class="qr-type-btn {{ $autoDefault == $nextCheckIn ? 'active-in' : '' }}" id="typeOptIn" data-type="{{ $nextCheckIn }}">CHECK IN</button>
+                    @endif
+                    @if($nextCheckOut)
+                    <button type="button" class="qr-type-btn {{ $autoDefault == $nextCheckOut ? 'active-out' : '' }}" id="typeOptOut" data-type="{{ $nextCheckOut }}">CHECK OUT</button>
+                    @endif
+                </div>
+            </div>
+            <button type="button" class="qr-cancel" onclick="window.cancelScan()">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
 
     @else
-    {{-- All done card --}}
-    <div style="text-align:center;padding:1.5rem;background:#e8f5e9;border-radius:18px;border:1px solid #a5d6a7">
-        <div style="font-size:3rem">✅</div>
-        <div style="font-weight:800;color:#1b5e20;margin-top:.4rem">All scans completed!</div>
-        <div style="font-size:.82rem;color:#2e7d32;margin-top:.2rem">See you tomorrow</div>
-    </div>
+        <div class="all-done-card mb-3">
+            <div class="all-done-icon">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <h2>You're all set!</h2>
+            <p>All scans for today have been completed.<br>Have a great rest of your day.</p>
+        </div>
     @endif
 
-    {{-- Camera area (hidden until button tapped) --}}
-    @if(in_array($scanMode, ['qr','gps_qr']))
-    <div class="qr-box" id="qrBox">
-        <div id="qrReader"></div>
-        <div class="qr-aim">
-            <svg viewBox="0 0 200 200" fill="none"><rect x="8" y="8" width="50" height="50" rx="6" stroke="white" stroke-width="5" fill="none"/><rect x="142" y="8" width="50" height="50" rx="6" stroke="white" stroke-width="5" fill="none"/><rect x="8" y="142" width="50" height="50" rx="6" stroke="white" stroke-width="5" fill="none"/><rect x="142" y="142" width="50" height="50" rx="6" stroke="white" stroke-width="5" fill="none"/></svg>
-        </div>
-        {{-- Type selector shown inside camera when active --}}
-        <div class="atd-type-sel" id="typeSel">
-            @if($nextCheckIn)
-            <button type="button" class="type-opt" id="typeOptIn" data-type="{{ $nextCheckIn }}">🟢 Check-In</button>
-            @endif
-            @if($nextCheckOut)
-            <button type="button" class="type-opt" id="typeOptOut" data-type="{{ $nextCheckOut }}">🔵 Check-Out</button>
-            @endif
-        </div>
-        <div class="qr-status-bar" id="qrStatus">Point camera at QR code…</div>
-    </div>
-    <button type="button" id="cancelBtn" onclick="cancelScan()" style="display:none;width:100%;padding:.55rem;border:1.5px solid #ef9a9a;border-radius:12px;background:#fdecea;color:#b71c1c;font-size:.85rem;font-weight:700;cursor:pointer">✕ Cancel</button>
-    @endif
+    <div id="scanMsg" style="display:none"></div>
 
-    <div id="scanMsg" class="atd-msg"></div>
-
-    {{-- Today's summary --}}
-    <div class="atd-summary-card">
-        <div class="atd-summary-header">Today's Scan Summary</div>
+    <!-- Today's Activity -->
+    <div class="activity-card" id="scanSummary">
+        <div class="activity-head">
+            <h3>Today's Activity</h3>
+        </div>
         @php
             $summaryRowsMap = [
-                'morning_in'  => ['label' => 'Check-In 1',  'type' => 'in'],
-                'lunch_out'   => ['label' => 'Check-Out 1', 'type' => 'out'],
-                'lunch_in'    => ['label' => 'Check-In 2',  'type' => 'in'],
-                'evening_out' => ['label' => 'Check-Out 2', 'type' => 'out'],
+                'morning_in'  => ['label' => 'Morning In',   'type' => 'in'],
+                'lunch_out'   => ['label' => 'Lunch Out',    'type' => 'out'],
+                'lunch_in'    => ['label' => 'Afternoon In', 'type' => 'in'],
+                'evening_out' => ['label' => 'Evening Out',  'type' => 'out'],
             ];
-
             $summaryRows = collect($scanFlow ?? ['morning_in', 'lunch_out', 'lunch_in', 'evening_out'])
-                ->mapWithKeys(fn ($type) => [$type => $summaryRowsMap[$type]])
-                ->all();
+                ->mapWithKeys(fn ($type) => [$type => $summaryRowsMap[$type]])->all();
         @endphp
         @foreach($summaryRows as $key => $row)
             @php $log = $todayLogs->get($key); @endphp
-            <div class="atd-summary-row">
-                <div class="atd-summary-badge {{ $log ? 'badge-'.($row['type']) : 'badge-miss' }}">
-                    {{ $row['type']==='in' ? 'IN' : 'OUT' }}
+            <div class="activity-row">
+                <div class="act-icon-wrap {{ $log ? $row['type'] : 'pending' }}">
+                    @if($row['type'] === 'in')
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14"/></svg>
+                    @else
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
+                    @endif
                 </div>
-                <span class="row-label">{{ $row['label'] }}</span>
-                @if($log)
-                    <span class="row-time">{{ $log->scanned_at?->format('H:i') }}</span>
-                @else
-                    <span class="row-miss">— —</span>
-                @endif
+                <div style="flex:1;min-width:0">
+                    <div class="act-label">{{ $row['label'] }}</div>
+                    <div class="act-sub">{{ $log ? 'Scanned' : 'Not scanned yet' }}</div>
+                </div>
+                <div style="text-align:right">
+                    @if($log)
+                        <div class="act-time">{{ $log->scanned_at?->format('h:i A') }}</div>
+                        <div class="act-status {{ strtolower($log->status_text ?? '') == 'late' ? 'late' : 'on-time' }}">{{ $log->status_text ?? 'On Time' }}</div>
+                    @else
+                        <div class="act-time" style="color:#c4d0dc">--:--</div>
+                    @endif
+                </div>
             </div>
         @endforeach
     </div>
-
-    @if($session)
-    <div class="atd-stats">
-        <div class="atd-stat-box">
-            <div class="n">{{ number_format($session->work_minutes/60,1) }}h</div>
-            <div class="l">Work Hrs</div>
-        </div>
-        <div class="atd-stat-box late">
-            <div class="n">{{ $session->late_minutes }}</div>
-            <div class="l">Late Min</div>
-        </div>
-        <div class="atd-stat-box ot">
-            <div class="n">{{ number_format($session->overtime_minutes/60,1) }}h</div>
-            <div class="l">Overtime</div>
-        </div>
-    </div>
-    @endif
-
 </div>
 
 @if(in_array($scanMode, ['qr','gps_qr']))
@@ -223,164 +331,111 @@
 @endif
 
 <script>
-window.addEventListener('load', function () {
-    /* clock */
-    function tick(){
-        const n=new Date();
-        document.getElementById('liveClock').textContent=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-        document.getElementById('liveDate').textContent=n.toLocaleDateString([],{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.addEventListener('DOMContentLoaded', () => {
+    function tick() {
+        const n = new Date();
+        const c = document.getElementById('liveClock'), d = document.getElementById('liveDate');
+        if(c) c.textContent = n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        if(d) d.textContent = n.toLocaleDateString([],{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     }
-    tick(); setInterval(tick,1000);
-    document.getElementById('deviceInfo').value=navigator.userAgent;
+    tick(); setInterval(tick, 1000);
 
-    const SCAN_MODE    = '{{ $scanMode }}';
-    const NEEDS_GPS    = SCAN_MODE==='gps' || SCAN_MODE==='gps_qr';
-    const NEEDS_QR     = SCAN_MODE==='qr'  || SCAN_MODE==='gps_qr';
-    const AUTO_DEFAULT = '{{ $autoDefault }}';
-    const NEXT_CI      = '{{ $nextCheckIn ?? "" }}';
-    const NEXT_CO      = '{{ $nextCheckOut ?? "" }}';
-    const CI_TYPES     = ['morning_in','lunch_in'];
+    const form = document.getElementById('scanForm');
+    const typeInput = document.getElementById('scanTypeInput'), qrTokenInput = document.getElementById('qrTokenInput');
+    const latInp = document.getElementById('latInput'), lngInp = document.getElementById('lngInput');
+    const deviceInfo = document.getElementById('deviceInfo');
+    const btnScan = document.getElementById('btnScan'), btnScanSub = document.getElementById('btnScanSub');
+    const qrBox = document.getElementById('qrBox'), scanHeader = document.getElementById('scanHeader');
+    const scanSummary = document.getElementById('scanSummary'), scanResultEl = document.getElementById('scanResult');
+    const qrStatus = document.getElementById('qrStatus'), scanMsg = document.getElementById('scanMsg');
+    const typeOptIn = document.getElementById('typeOptIn'), typeOptOut = document.getElementById('typeOptOut');
 
-    const form       = document.getElementById('scanForm');
-    const typeInput  = document.getElementById('scanTypeInput');
-    const qrTokenInp = document.getElementById('qrTokenInput');
-    const latInp     = document.getElementById('latInput');
-    const lngInp     = document.getElementById('lngInput');
-    const msgEl      = document.getElementById('scanMsg');
-    const qrBoxEl    = document.getElementById('qrBox');
-    const qrStatusEl = document.getElementById('qrStatus');
-    const cancelBtn  = document.getElementById('cancelBtn');
-    const typeOptIn  = document.getElementById('typeOptIn');
-    const typeOptOut = document.getElementById('typeOptOut');
-    const btnScanSub = document.getElementById('btnScanSub');
+    if(deviceInfo) deviceInfo.value = navigator.userAgent;
+    const SCAN_MODE = '{{ $scanMode }}', AUTO_DEFAULT = '{{ $autoDefault }}';
+    const NEXT_CI = '{{ $nextCheckIn ?? "" }}', NEXT_CO = '{{ $nextCheckOut ?? "" }}';
+    const NEEDS_GPS = SCAN_MODE==='gps'||SCAN_MODE==='gps_qr', NEEDS_QR = SCAN_MODE==='qr'||SCAN_MODE==='gps_qr';
+    let currentType = AUTO_DEFAULT, scanner = null, isScanning = false, isSubmitting = false;
 
-    /* Current scan type — starts with auto-default */
-    let currentType = AUTO_DEFAULT;
+    function showMsg(text,type='info'){scanMsg.className=type;scanMsg.textContent=text;scanMsg.style.display='block';}
+    function hideMsg(){scanMsg.style.display='none';}
 
-    function showMsg(t,k='info'){msgEl.textContent=t;msgEl.className='atd-msg visible '+k;}
-    function hideMsg(){msgEl.className='atd-msg';}
-    function setStatus(t){if(qrStatusEl)qrStatusEl.textContent=t;}
-
-    /* Type selector */
-    function setActiveType(type){
-        if(!type)return;
-        currentType=type;
-        typeInput.value=type;
-        const isCI=CI_TYPES.includes(type);
-        if(typeOptIn){typeOptIn.className='type-opt'+(NEXT_CI===type?' active-in':'');}
-        if(typeOptOut){typeOptOut.className='type-opt'+(NEXT_CO===type?' active-out':'');}
-        if(btnScanSub)btnScanSub.textContent='Auto: '+(isCI?'🟢 Check-In':'🔵 Check-Out');
-    }
-
-    /* Wire type selector buttons */
-    if(typeOptIn)  typeOptIn.addEventListener('click',function(){setActiveType(NEXT_CI);});
-    if(typeOptOut) typeOptOut.addEventListener('click',function(){setActiveType(NEXT_CO);});
-
-    /* Apply initial active state */
-    setActiveType(AUTO_DEFAULT);
-
-    /* GPS */
-    let gpsPromise=null;
-    function getGps(){
-        if(gpsPromise)return gpsPromise;
-        gpsPromise=new Promise(resolve=>{
-            if(!navigator.geolocation){resolve(false);return;}
-            navigator.geolocation.getCurrentPosition(
-                p=>{latInp.value=p.coords.latitude.toFixed(6);lngInp.value=p.coords.longitude.toFixed(6);resolve(true);},
-                ()=>resolve(false),
-                {enableHighAccuracy:true,timeout:14000,maximumAge:0}
-            );
-        });
-        return gpsPromise;
-    }
-
-    /* QR scanner */
-    let scanner=null, scanRunning=false, submitted=false;
-
-    async function startQrScanner(){
-        if(scanRunning)return;
-        typeInput.value=currentType;
-        qrTokenInp.value='';
-        submitted=false;
-        qrBoxEl.classList.add('visible');
-        if(cancelBtn)cancelBtn.style.display='block';
-        setStatus('🎯 Point camera at the QR code…');
-        if(!scanner) scanner=new Html5Qrcode('qrReader');
-        try{
-            await scanner.start(
-                {facingMode:'environment'},
-                {fps:12, qrbox:function(w,h){const s=Math.min(w,h)*0.7;return{width:s,height:s};}},
-                async decoded=>{
-                    if(submitted)return;
-                    submitted=true;
-                    typeInput.value=currentType; // capture selected type at scan moment
-                    qrTokenInp.value=decoded.trim();
-                    setStatus('✅ QR scanned! Verifying…');
-                    try{await scanner.stop();}catch(_){}
-                    scanRunning=false;
-                    if(NEEDS_GPS){
-                        setStatus('📍 Getting location…');
-                        const ok=await getGps();
-                        if(!ok){
-                            showMsg('Location access denied. Please allow GPS and try again.','danger');
-                            setStatus('⚠ Location denied.');
-                            if(cancelBtn)cancelBtn.style.display='block';
-                            submitted=false;
-                            return;
-                        }
-                    }
-                    setStatus('Submitting…');
-                    form.submit();
-                },
-                ()=>{}
-            );
-            scanRunning=true;
-        }catch(err){
-            scanRunning=false;
-            qrBoxEl.classList.remove('visible');
-            if(cancelBtn)cancelBtn.style.display='none';
-            if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')
-                showMsg('Camera permission denied. Please allow camera access.','danger');
-            else if(err.name==='NotFoundError')
-                showMsg('No camera found on this device.','danger');
-            else if(location.protocol!=='https:'&&location.hostname!=='localhost')
-                showMsg('HTTPS required for camera access.','danger');
-            else
-                showMsg('Cannot start camera: '+err.message,'danger');
+    function setScanMode(active) {
+        if(active){
+            if(btnScan) btnScan.style.display='none';
+            if(scanHeader) scanHeader.style.display='none';
+            if(scanSummary) scanSummary.style.display='none';
+            if(scanResultEl) scanResultEl.style.display='none';
+            if(qrBox) qrBox.style.display='block';
+        } else {
+            if(qrBox) qrBox.style.display='none';
+            if(btnScan) btnScan.style.display='';
+            if(scanHeader) scanHeader.style.display='';
+            if(scanSummary) scanSummary.style.display='';
+            if(scanResultEl) scanResultEl.style.display='';
         }
     }
 
-    window.cancelScan=async function(){
-        submitted=false;
-        if(scanner&&scanRunning){try{await scanner.stop();}catch(_){}}
-        scanRunning=false;
-        if(qrBoxEl)qrBoxEl.classList.remove('visible');
-        if(cancelBtn)cancelBtn.style.display='none';
-        hideMsg();
-    };
+    function setActiveType(type) {
+        if(!type) return; currentType=type; typeInput.value=type;
+        if(typeOptIn)  typeOptIn.className  = 'qr-type-btn'+(type===NEXT_CI?' active-in':'');
+        if(typeOptOut) typeOptOut.className = 'qr-type-btn'+(type===NEXT_CO?' active-out':'');
+    }
+    if(typeOptIn)  typeOptIn.addEventListener('click',()=>setActiveType(NEXT_CI));
+    if(typeOptOut) typeOptOut.addEventListener('click',()=>setActiveType(NEXT_CO));
+    setActiveType(AUTO_DEFAULT);
 
-    /* GPS-only scan */
-    async function doGpsScan(){
-        typeInput.value=currentType;
-        showMsg('Getting your location…','info');
-        const ok=await getGps();
-        if(!ok){showMsg('Location denied. Allow GPS and try again.','danger');return;}
-        showMsg('Location found. Submitting…','ok');
-        form.submit();
+    function getGps(){
+        return new Promise(resolve=>{
+            if(!navigator.geolocation){resolve(false);return;}
+            navigator.geolocation.getCurrentPosition(
+                pos=>{latInp.value=pos.coords.latitude.toFixed(6);lngInp.value=pos.coords.longitude.toFixed(6);resolve(true);},
+                ()=>resolve(false),{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+        });
     }
 
-    /* Single scan button */
-    const btnScan=document.getElementById('btnScan');
+    async function startScanner(){
+        if(isScanning) return; hideMsg();
+        try{
+            setScanMode(true); isScanning=true; qrStatus.textContent='Requesting camera access…';
+            if(!scanner) scanner=new Html5Qrcode('qrReader');
+            await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},
+                async decoded=>{
+                    if(isSubmitting) return; isSubmitting=true;
+                    try{await scanner.stop();}catch(e){} isScanning=false;
+                    qrStatus.textContent='Processing…';
+                    qrTokenInput.value=decoded.trim(); typeInput.value=currentType;
+                    if(NEEDS_GPS){qrStatus.textContent='Getting location…';const ok=await getGps();if(!ok){isSubmitting=false;setScanMode(false);showMsg('Location access denied. Please enable GPS.','error');return;}}
+                    qrStatus.textContent='Submitting…'; form.submit();
+                },()=>{});
+            qrStatus.textContent='Align QR code within the frame';
+        } catch(err){
+            isScanning=false; setScanMode(false);
+            let msg='Could not access camera.';
+            if(err.name==='NotAllowedError') msg='Camera permission denied.';
+            else if(err.name==='NotFoundError') msg='No camera found.';
+            else if(location.protocol!=='https:'&&location.hostname!=='localhost') msg='HTTPS is required for camera access.';
+            showMsg(msg,'error');
+        }
+    }
+
+    window.cancelScan = async function(){
+        if(scanner&&isScanning){try{await scanner.stop();}catch(e){}}
+        isScanning=false; isSubmitting=false; setScanMode(false); hideMsg();
+    };
+
     if(btnScan){
-        btnScan.addEventListener('click',function(){
-            if(NEEDS_QR){
-                if(scanRunning){window.cancelScan();return;}
-                startQrScanner();
-            }else{
-                doGpsScan();
-            }
+        btnScan.addEventListener('click',()=>{
+            if(NEEDS_QR){startScanner();return;}
+            (async()=>{
+                if(btnScan.disabled) return; btnScan.disabled=true;
+                if(btnScanSub) btnScanSub.textContent='Locating…';
+                const ok=await getGps();
+                if(ok){typeInput.value=currentType;form.submit();}
+                else{btnScan.disabled=false;showMsg('Location access denied.','error');}
+            })();
         });
     }
 });
 </script>
+
 </x-layouts.employee>

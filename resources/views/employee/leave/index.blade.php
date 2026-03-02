@@ -1,455 +1,489 @@
-<x-layouts.employee page-title="My Requests" page-description="Manage your Leave, Overtime (OT), and Day Off changes.">
+﻿<x-layouts.employee page-title="Request" page-description="Request Leave, Overtime (OT), and Change Day Off." :show-page-banner="false">
+    
+    <!-- External Dependencies (Scoped to this page) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="//unpkg.com/alpinejs" defer></script>
+
     <style>
         [x-cloak] { display: none !important; }
         
-        .nav-pills-custom {
+        .page-container {
+            padding: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Header Card */
+        .header-card {
             background: #fff;
-            padding: 5px;
-            border-radius: 16px;
-            box-shadow: var(--shadow-soft);
-            display: flex;
-            gap: 5px;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 6px; height: 100%;
+            background: var(--brand);
+        }
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        .header-desc {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .date-pill {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
             margin-bottom: 20px;
         }
-
-        .nav-pills-custom .nav-link {
-            border-radius: 12px;
-            color: var(--muted);
-            font-weight: 700;
-            font-size: 0.85rem;
-            padding: 0.65rem 1rem;
-            flex: 1;
-            text-align: center;
-            border: none;
-            background: transparent;
-            transition: all 0.2s ease;
-        }
-
-        .nav-pills-custom .nav-link.active {
-            background: var(--brand);
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(31, 79, 130, 0.2);
-        }
-
-        .form-section {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .form-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .leave-entry {
+        .tab-btn {
+            background: #fff;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
-            padding: 1.2rem;
-            background: #fff;
-            transition: transform 0.2s;
+            padding: 1rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
         }
-
-        .leave-entry:hover {
+        .tab-btn i { font-size: 1.25rem; margin-bottom: 2px; }
+        .tab-btn span { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; }
+        
+        .tab-btn.active {
+            background: #1e3a8a; /* Dark Blue */
+            color: #fff;
+            border-color: #1e3a8a;
+            box-shadow: 0 8px 16px rgba(30, 58, 138, 0.2);
             transform: translateY(-2px);
-            box-shadow: var(--shadow-soft);
+        }
+        .tab-btn:hover:not(.active) {
+            background: #f8fafc;
             border-color: #cbd5e1;
         }
 
-        .status-badge {
-            border-radius: 8px;
-            font-size: 0.72rem;
-            padding: 0.35rem 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* Form Card */
+        .form-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            margin-bottom: 30px;
         }
-
-        .status-approved { color: #047857; background: #d1fae5; }
-        .status-rejected { color: #b91c1c; background: #fee2e2; }
-        .status-pending { color: #b45309; background: #fef3c7; }
-
-        .form-control, .form-select {
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .form-icon {
+            width: 40px; height: 40px;
             border-radius: 12px;
-            border: 1px solid #cbd5e1;
-            padding: 0.7rem 1rem;
-            font-size: 0.9rem;
-            background-color: #f8fafc;
+            background: #e0f2fe;
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        .form-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
         }
 
-        .form-control:focus, .form-select:focus {
-            background-color: #fff;
-            border-color: var(--brand);
-            box-shadow: 0 0 0 4px rgba(31, 79, 130, 0.1);
-        }
-
-        .input-label {
+        .form-group { margin-bottom: 1rem; }
+        .form-label {
             font-size: 0.85rem;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 0.4rem;
-        }
-
-        .btn-submit {
-            background: var(--brand);
-            color: #fff;
-            border-radius: 12px;
-            padding: 0.8rem;
             font-weight: 700;
-            border: none;
+            color: #334155;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .form-control, .form-select {
+            display: block;
             width: 100%;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            color: #1e293b;
+            background-color: #f8fafc;
             transition: all 0.2s;
         }
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background-color: #fff;
+            outline: 0;
+        }
+        textarea.form-control { resize: none; }
 
+        .btn-submit {
+            width: 100%;
+            background: #1e3a8a;
+            color: #fff;
+            padding: 0.9rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
         .btn-submit:hover {
-            background: var(--brand-dark);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3);
+            background: #172554;
+        }
+
+        /* History Section */
+        .history-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
         }
         
-        .request-type-icon {
-            width: 32px; height: 32px;
-            border-radius: 10px;
-            display: inline-flex; justify-content: center; align-items: center;
-            margin-right: 10px;
+        .history-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 12px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .history-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+        .history-info { flex-grow: 1; }
+        .history-type { font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 2px; }
+        .history-date { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            text-transform: uppercase;
+        }
+        .status-pending { background: #fef9c3; color: #854d0e; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        /* Animation */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cancel Button Overlay */
+        .cancel-btn {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
         }
     </style>
 
-    <div x-data="{ tab: 'leave', isRequesting: false }">
-        <!-- Start Request Toggle Button -->
-        <div class="d-flex justify-content-center mb-4" x-show="!isRequesting" x-transition>
-            <button @click="isRequesting = true" class="btn btn-submit d-flex align-items-center justify-content-center gap-2" style="font-size: 1.05rem; padding: 0.9rem;">
-                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-                ការស្នើសុំថ្មី (New Request)
+    <div x-data="{ tab: 'leave', showForm: true }" class="page-container">
+        
+        <!-- Header Section -->
+        <div class="header-card">
+            <h1 class="header-title">My Requests</h1>
+            <p class="header-desc">Manage your Leave, Overtime (OT), and Day Off changes.</p>
+            <span class="date-pill">{{ \Carbon\Carbon::now()->format('D, M d') }}</span>
+        </div>
+
+        <!-- Selection Controls -->
+        <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+            <span style="font-size:0.85rem; font-weight:700; color:#475569;">Select request type</span>
+            <button x-show="showForm" @click="showForm = false" class="cancel-btn">
+                <i class="fa-solid fa-xmark"></i> Cancel
+            </button>
+            <button x-show="!showForm" @click="showForm = true" class="cancel-btn" style="background:#e0f2fe; color:#0369a1;">
+                <i class="fa-solid fa-plus"></i> New
             </button>
         </div>
 
-        <!-- Requests Section Container -->
-        <div x-show="isRequesting" x-transition x-cloak>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold mb-0 text-muted">ជ្រើសរើសប្រភេទ (Select Type)</h6>
-                <button @click="isRequesting = false" class="btn text-danger btn-sm bg-white border border-danger shadow-sm rounded-pill fw-bold px-3">
-                    <svg width="16" height="16" class="me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    បិទ (Close)
-                </button>
+        <div class="tabs-container">
+            <div class="tab-btn" :class="tab === 'leave' ? 'active' : ''" @click="tab = 'leave'; showForm = true">
+                <i class="fa-regular fa-calendar-check"></i>
+                <span>Leave</span>
             </div>
+            <div class="tab-btn" :class="tab === 'ot' ? 'active' : ''" @click="tab = 'ot'; showForm = true">
+                <i class="fa-regular fa-clock"></i>
+                <span>Overtime</span>
+            </div>
+            <div class="tab-btn" :class="tab === 'dayoff' ? 'active' : ''" @click="tab = 'dayoff'; showForm = true">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                <span>Day Off</span>
+            </div>
+        </div>
 
-            <!-- Dynamic Tabs -->
-            <nav class="nav-pills-custom">
-            <button class="nav-link" :class="{ 'active': tab === 'leave' }" @click="tab = 'leave'">
-                <svg width="18" height="18" class="mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <br>Leave
-            </button>
-            <button class="nav-link" :class="{ 'active': tab === 'ot' }" @click="tab = 'ot'">
-                <svg width="18" height="18" class="mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <br>OT Request
-            </button>
-            <button class="nav-link" :class="{ 'active': tab === 'dayoff' }" @click="tab = 'dayoff'">
-                <svg width="18" height="18" class="mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                <br>Change Dayoff
-            </button>
-        </nav>
-
-        <!-- FORM: Leave Request -->
-        <section class="form-section mb-4" :class="{ 'active': tab === 'leave' }">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
-                <div class="d-flex align-items-center mb-4">
-                    <div class="request-type-icon" style="background:#e0e7ff; color:#059669;">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+        <!-- Forms Area -->
+        <div x-show="showForm" x-transition.opacity.duration.300ms>
+            
+            <!-- Leave Form -->
+            <div x-show="tab === 'leave'" class="form-card fade-in">
+                <div class="form-header">
+                    <div class="form-icon">
+                        <i class="fa-regular fa-calendar-plus"></i>
                     </div>
-                    <h3 class="mb-0 fw-bold" style="font-size: 1.15rem; color:#1e293b;">New Leave Request</h3>
+                    <h3 class="form-title">New Leave Request</h3>
                 </div>
 
-                <form method="POST" enctype="multipart/form-data" action="{{ route('employee.leave.store') }}" class="row g-3">
+                <form method="POST" enctype="multipart/form-data" action="{{ route('employee.leave.store') }}">
                     @csrf
-                    <div class="col-12">
-                        <label class="input-label">Leave Type</label>
+                    <div class="form-group">
+                        <label class="form-label">Leave Type</label>
                         <select name="leave_type_id" class="form-select" required>
-                            <option value="">Select Type</option>
+                            <option value="">— Select Type —</option>
                             @foreach($leaveTypes as $type)
                                 <option value="{{ $type->id }}">{{ $type->name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-6">
-                        <label class="input-label">Start Date</label>
-                        <input type="date" name="start_date" class="form-control" required>
+
+                    <div class="row">
+                        <div class="col-6 form-group">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="start_date" class="form-control" required>
+                        </div>
+                        <div class="col-6 form-group">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="end_date" class="form-control" required>
+                        </div>
                     </div>
-                    <div class="col-6">
-                        <label class="input-label">End Date</label>
-                        <input type="date" name="end_date" class="form-control" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="input-label">Reason (Optional)</label>
+
+                    <div class="form-group">
+                        <label class="form-label">Reason <span class="text-muted fw-normal">(optional)</span></label>
                         <textarea name="reason" class="form-control" rows="3" placeholder="Why are you requesting leave?"></textarea>
                     </div>
-                    <div class="col-12">
-                        <label class="input-label">Attachment (Optional)</label>
+
+                    <div class="form-group">
+                        <label class="form-label">Attachment <span class="text-muted fw-normal">(optional)</span></label>
                         <input type="file" name="attachment" class="form-control">
                     </div>
-                    <div class="col-12 pt-2">
-                        <button class="btn-submit">Submit Leave Request</button>
-                    </div>
+
+                    <button type="submit" class="btn-submit">Submit Leave Request</button>
                 </form>
             </div>
-        </section>
 
-        <!-- FORM: OT Request -->
-        <section class="form-section mb-4" :class="{ 'active': tab === 'ot' }">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
-                <div class="d-flex align-items-center mb-4">
-                    <div class="request-type-icon" style="background:#fef3c7; color:#d97706;">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <!-- Overtime Form -->
+            <div x-show="tab === 'ot'" x-cloak class="form-card fade-in" 
+                 x-data="{ start:'', end:'', hours:'0.0', calc() { if(this.start&&this.end){let s=new Date('1970-01-01T'+this.start),e=new Date('1970-01-01T'+this.end);this.hours=e>s?((e-s)/3600000).toFixed(1):'—';} } }">
+                <div class="form-header">
+                    <div class="form-icon" style="background:#fef9c3; color:#b45309;">
+                        <i class="fa-solid fa-stopwatch"></i>
                     </div>
-                    <h3 class="mb-0 fw-bold" style="font-size: 1.15rem; color:#1e293b;">Overtime (OT) Request</h3>
+                    <h3 class="form-title">New Overtime Request</h3>
                 </div>
 
-                <form method="POST" action="{{ route('employee.overtime.store') }}" class="row g-3" x-data="{ start: '', end: '', hours: '0.0', calcHours() {
-                        if (this.start && this.end) {
-                            let s = new Date(`1970-01-01T${this.start}:00`);
-                            let e = new Date(`1970-01-01T${this.end}:00`);
-                            if (e > s) {
-                                this.hours = ((e - s) / 3600000).toFixed(1);
-                            } else {
-                                this.hours = '0.0 (Invalid)';
-                            }
-                        } else {
-                            this.hours = '0.0';
-                        }
-                    } }">
+                <form method="POST" action="{{ route('employee.overtime.store') }}">
                     @csrf
-                    <div class="col-12">
-                        <label class="input-label">Date of Overtime</label>
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
                         <input type="date" name="ot_date" class="form-control" required>
                     </div>
-                    <div class="col-6">
-                        <label class="input-label">Start Time</label>
-                        <input type="time" name="start_time" x-model="start" @input="calcHours()" class="form-control" required>
-                    </div>
-                    <div class="col-6">
-                        <label class="input-label">End Time</label>
-                        <input type="time" name="end_time" x-model="end" @input="calcHours()" class="form-control" required>
-                    </div>
-                    <div class="col-12">
-                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-3 mb-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-secondary" style="font-size:0.85rem">Total Hours Estimated</span>
-                                <strong class="text-primary font-bold" x-text="hours + ' hrs'"></strong>
-                            </div>
+
+                    <div class="row">
+                        <div class="col-6 form-group">
+                            <label class="form-label">Start Time</label>
+                            <input type="time" name="start_time" x-model="start" @input="calc()" class="form-control" required>
+                        </div>
+                        <div class="col-6 form-group">
+                            <label class="form-label">End Time</label>
+                            <input type="time" name="end_time" x-model="end" @input="calc()" class="form-control" required>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <label class="input-label">Task / Reason</label>
+
+                    <div class="mb-3 p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold text-muted">Estimated Hours</span>
+                        <span class="fw-bold text-dark" x-text="hours + ' hrs'"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Task / Reason</label>
                         <textarea class="form-control" name="reason" rows="3" placeholder="What task will be accomplished?"></textarea>
                     </div>
-                    <div class="col-12 pt-2">
-                        <button class="btn-submit" style="background: #eab308; color: #fff;">Request OT</button>
-                    </div>
+
+                    <button type="submit" class="btn-submit" style="background:linear-gradient(135deg,#d97706,#92400e)">Submit OT Request</button>
                 </form>
             </div>
-        </section>
 
-        <!-- FORM: Change Day Off Request -->
-        <section class="form-section mb-4" :class="{ 'active': tab === 'dayoff' }">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
-                <div class="d-flex align-items-center mb-4">
-                    <div class="request-type-icon" style="background:#e0f2fe; color:#4f46e5;">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+            <!-- Day Off Form -->
+            <div x-show="tab === 'dayoff'" x-cloak class="form-card fade-in">
+                <div class="form-header">
+                    <div class="form-icon" style="background:#ede9fe; color:#6d28d9;">
+                        <i class="fa-solid fa-shuffle"></i>
                     </div>
-                    <h3 class="mb-0 fw-bold" style="font-size: 1.15rem; color:#1e293b;">Change Day Off</h3>
+                    <h3 class="form-title">Change Day Off</h3>
                 </div>
 
-                <form method="POST" action="{{ route('employee.changedayoff.store') }}" class="row g-3">
+                <form method="POST" action="{{ route('employee.changedayoff.store') }}">
                     @csrf
-                    <div class="col-12">
-                        <label class="input-label">Original Day Off Date</label>
+                    <div class="form-group">
+                        <label class="form-label">Original Day Off</label>
                         <input type="date" name="original_date" class="form-control" required>
                     </div>
-                    <div class="col-12 text-center my-2 text-muted">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+
+                    <div class="text-center my-2 text-muted">
+                        <i class="fa-solid fa-arrow-down"></i>
                     </div>
-                    <div class="col-12">
-                        <label class="input-label">New Wanted Day Off</label>
+
+                    <div class="form-group">
+                        <label class="form-label">New Preferred Date</label>
                         <input type="date" name="requested_date" class="form-control" required>
                     </div>
-                    <div class="col-12">
-                        <label class="input-label">Reason</label>
+
+                    <div class="form-group">
+                        <label class="form-label">Reason</label>
                         <textarea class="form-control" name="reason" rows="2" placeholder="Brief explanation"></textarea>
                     </div>
-                    <div class="col-12 pt-2">
-                        <button class="btn-submit" style="background: #4f46e5;">Request Change</button>
-                    </div>
+
+                    <button type="submit" class="btn-submit" style="background:linear-gradient(135deg,#6d28d9,#4c1d95)">Submit Request</button>
                 </form>
             </div>
-        </section>
-        </div> <!-- End of Requests Section Container -->
+        </div>
 
-        <!-- Requests History -->
-        <section>
-            <div class="d-flex justify-content-between align-items-end mb-3 mt-4">
-                <h3 class="mb-0 fw-bold" style="font-size: 1.1rem; color: #334155;">Recent Requests</h3>
-            </div>
+        <!-- History Section -->
+        <h2 class="history-title">Request History</h2>
 
-            <!-- LEAVE HISTORY -->
-            <div x-show="tab === 'leave'" x-transition class="d-grid gap-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="badge bg-light text-secondary border">{{ $leaveRequests->total() }} records</span>
-                </div>
-                @forelse($leaveRequests as $leave)
-                    <article class="leave-entry">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="bg-light rounded p-2 text-secondary">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                </div>
-                                <div>
-                                    <h4 class="mb-0 fw-bold" style="font-size: 0.95rem; color:#1e293b;">{{ $leave->leaveType->name }}</h4>
-                                    <small class="text-muted">{{ number_format($leave->days, 1) }} Days</small>
-                                </div>
+        <!-- Leave History -->
+        <div x-show="tab === 'leave'">
+            @forelse($leaveRequests as $leave)
+            <div class="history-card fade-in">
+                <div class="d-flex align-items-center w-100">
+                    <div class="history-icon" style="background:#e0f2fe; color:#0369a1;">
+                        <i class="fa-regular fa-calendar-check"></i>
+                    </div>
+                    <div class="history-info">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="history-type">{{ $leave->leaveType->name }}</div>
+                                <div class="history-date">{{ $leave->start_date->format('M d') }} - {{ $leave->end_date->format('M d, Y') }}</div>
                             </div>
-                            <span class="status-badge status-{{ $leave->status }}">{{ $leave->status }}</span>
+                            <span class="status-badge status-{{ strtolower($leave->status) }}">{{ $leave->status }}</span>
                         </div>
-                        
-                        <div class="mt-3 bg-light rounded px-3 py-2" style="font-size: 0.85rem;">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-slate-500 fw-medium">Dates:</span>
-                                <span class="text-slate-800 fw-bold">{{ $leave->start_date->format('M d, Y') }} - {{ $leave->end_date->format('M d, Y') }}</span>
-                            </div>
-                            @if($leave->reason)
-                                <div class="d-flex justify-content-between mt-2 pt-2 border-top">
-                                    <span class="text-slate-500 fw-medium">Reason:</span>
-                                    <span class="text-slate-800 text-end" style="max-width: 70%">{{ $leave->reason }}</span>
-                                </div>
-                            @endif
-                            @if($leave->admin_comment)
-                                <div class="mt-2 text-danger">
-                                    <span class="fw-bold">HR Reply:</span> {{ $leave->admin_comment }}
-                                </div>
-                            @endif
-                        </div>
-
-                        @if($leave->attachment_path)
-                            <div class="mt-3">
-                                <a href="{{ asset('storage/' . $leave->attachment_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" style="font-size:0.75rem;">
-                                    View Proof
-                                </a>
-                            </div>
+                        @if($leave->admin_comment)
+                            <div class="small text-danger mt-1 p-1 bg-light rounded px-2" style="font-size:0.7rem;">Note: {{ $leave->admin_comment }}</div>
                         @endif
-                    </article>
-                @empty
-                    <div class="text-center py-5 bg-white rounded-4 border-0 shadow-sm">
-                        <svg width="48" height="48" class="text-muted opacity-50 mb-3 mx-auto" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-                        <h6 class="fw-bold text-slate-800">No Leave Requests</h6>
                     </div>
-                @endforelse
-                <div class="mt-2">{{ $leaveRequests->links() }}</div>
-            </div>
-
-            <!-- OT HISTORY -->
-            <div x-show="tab === 'ot'" x-cloak x-transition class="d-grid gap-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="badge bg-light text-secondary border">{{ $otRequests->total() }} records</span>
                 </div>
-                @forelse($otRequests as $ot)
-                    <article class="leave-entry">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="bg-light rounded p-2 text-warning">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                </div>
-                                <div>
-                                    <h4 class="mb-0 fw-bold" style="font-size: 0.95rem; color:#1e293b;">Overtime</h4>
-                                    <small class="text-muted">{{ number_format($ot->total_hours, 1) }} Hours</small>
-                                </div>
-                            </div>
-                            <span class="status-badge status-{{ $ot->status }}">{{ $ot->status }}</span>
-                        </div>
-                        
-                        <div class="mt-3 bg-light rounded px-3 py-2" style="font-size: 0.85rem;">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-slate-500 fw-medium">Date:</span>
-                                <span class="text-slate-800 fw-bold">{{ \Carbon\Carbon::parse($ot->ot_date)->format('M d, Y') }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-slate-500 fw-medium">Time:</span>
-                                <span class="text-slate-800 fw-bold">{{ \Carbon\Carbon::parse($ot->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($ot->end_time)->format('h:i A') }}</span>
-                            </div>
-                            @if($ot->reason)
-                                <div class="d-flex justify-content-between mt-2 pt-2 border-top">
-                                    <span class="text-slate-500 fw-medium">Task:</span>
-                                    <span class="text-slate-800 text-end" style="max-width: 70%">{{ $ot->reason }}</span>
-                                </div>
-                            @endif
-                            @if($ot->admin_comment)
-                                <div class="mt-2 text-danger">
-                                    <span class="fw-bold">HR Reply:</span> {{ $ot->admin_comment }}
-                                </div>
-                            @endif
-                        </div>
-                    </article>
-                @empty
-                    <div class="text-center py-5 bg-white rounded-4 border-0 shadow-sm">
-                        <svg width="48" height="48" class="text-muted opacity-50 mb-3 mx-auto" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h6 class="fw-bold text-slate-800">No OT Requests</h6>
-                    </div>
-                @endforelse
-                <div class="mt-2">{{ $otRequests->links() }}</div>
             </div>
+            @empty
+            <div class="text-center py-4 text-muted border rounded-3 bg-white">
+                <i class="fa-regular fa-folder-open mb-2 display-6"></i>
+                <p class="small m-0">No leave requests found</p>
+            </div>
+            @endforelse
+            <div class="mt-3">{{ $leaveRequests->links() }}</div>
+        </div>
 
-            <!-- CHANGE DAYOFF HISTORY -->
-            <div x-show="tab === 'dayoff'" x-cloak x-transition class="d-grid gap-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="badge bg-light text-secondary border">{{ $dayoffRequests->total() }} records</span>
-                </div>
-                @forelse($dayoffRequests as $do)
-                    <article class="leave-entry">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="bg-light rounded p-2 text-primary">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                                </div>
-                                <div>
-                                    <h4 class="mb-0 fw-bold" style="font-size: 0.95rem; color:#1e293b;">Day Off Change</h4>
-                                </div>
-                            </div>
-                            <span class="status-badge status-{{ $do->status }}">{{ $do->status }}</span>
-                        </div>
-                        
-                        <div class="mt-3 bg-light rounded px-3 py-2" style="font-size: 0.85rem;">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-slate-500 fw-medium">Original:</span>
-                                <span class="text-slate-800 fw-bold text-decoration-line-through text-danger">{{ \Carbon\Carbon::parse($do->original_date)->format('M d, Y') }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-slate-500 fw-medium">New Wanted:</span>
-                                <span class="text-slate-800 fw-bold text-success">{{ \Carbon\Carbon::parse($do->requested_date)->format('M d, Y') }}</span>
-                            </div>
-                            @if($do->reason)
-                                <div class="d-flex justify-content-between mt-2 pt-2 border-top">
-                                    <span class="text-slate-500 fw-medium">Reason:</span>
-                                    <span class="text-slate-800 text-end" style="max-width: 70%">{{ $do->reason }}</span>
-                                </div>
-                            @endif
-                            @if($do->admin_comment)
-                                <div class="mt-2 text-danger">
-                                    <span class="fw-bold">HR Reply:</span> {{ $do->admin_comment }}
-                                </div>
-                            @endif
-                        </div>
-                    </article>
-                @empty
-                    <div class="text-center py-5 bg-white rounded-4 border-0 shadow-sm">
-                        <svg width="48" height="48" class="text-muted opacity-50 mb-3 mx-auto" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                        <h6 class="fw-bold text-slate-800">No Day Off Changes</h6>
+        <!-- OT History -->
+        <div x-show="tab === 'ot'" x-cloak>
+            @forelse($otRequests as $ot)
+            <div class="history-card fade-in">
+                <div class="d-flex align-items-center w-100">
+                    <div class="history-icon" style="background:#fef9c3; color:#b45309;">
+                        <i class="fa-solid fa-clock"></i>
                     </div>
-                @endforelse
-                <div class="mt-2">{{ $dayoffRequests->links() }}</div>
+                    <div class="history-info">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="history-type">Overtime</div>
+                                <div class="history-date">{{ \Carbon\Carbon::parse($ot->ot_date)->format('M d, Y') }} • {{ number_format($ot->total_hours, 1) }}h</div>
+                            </div>
+                            <span class="status-badge status-{{ strtolower($ot->status) }}">{{ $ot->status }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>
+            @empty
+            <div class="text-center py-4 text-muted border rounded-3 bg-white">
+                <i class="fa-regular fa-folder-open mb-2 display-6"></i>
+                <p class="small m-0">No overtime requests found</p>
+            </div>
+            @endforelse
+            <div class="mt-3">{{ $otRequests->links() }}</div>
+        </div>
+
+         <!-- Day Off History -->
+         <div x-show="tab === 'dayoff'" x-cloak>
+            @forelse($dayoffRequests as $req)
+            <div class="history-card fade-in">
+                <div class="d-flex align-items-center w-100">
+                    <div class="history-icon" style="background:#ede9fe; color:#6d28d9;">
+                        <i class="fa-solid fa-shuffle"></i>
+                    </div>
+                    <div class="history-info">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="history-type">Day Off Change</div>
+                                <div class="history-date">
+                                    <span class="text-danger text-decoration-line-through">{{ \Carbon\Carbon::parse($req->original_date)->format('M d') }}</span>
+                                    <i class="fa-solid fa-arrow-right mx-1 text-muted" style="font-size:0.7em"></i>
+                                    <span class="text-success">{{ \Carbon\Carbon::parse($req->requested_date)->format('M d') }}</span>
+                                </div>
+                            </div>
+                            <span class="status-badge status-{{ strtolower($req->status) }}">{{ $req->status }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="text-center py-4 text-muted border rounded-3 bg-white">
+                <i class="fa-regular fa-folder-open mb-2 display-6"></i>
+                <p class="small m-0">No day-off requests found</p>
+            </div>
+            @endforelse
+            <div class="mt-3">{{ $dayoffRequests->links() }}</div>
+        </div>
+
+        <div style="height: 100px;"></div>
     </div>
-
-    <!-- Alpine.js for Tabs Setup -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </x-layouts.employee>

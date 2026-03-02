@@ -77,12 +77,15 @@
 .atd-stat-box .l{font-size:.66rem;color:#7a96b5;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
 .atd-stat-box.late .n{color:#e65100}
 .atd-stat-box.ot .n{color:#1565c0}
+
+/* show only camera area while scanning */
+.atd-wrap.scanning .scan-hide-on-active{display:none!important}
 </style>
 
 <div class="atd-wrap">
 
     {{-- Clock --}}
-    <div>
+    <div class="scan-hide-on-active">
         <div class="atd-clock" id="liveClock">--:--:--</div>
         <div class="atd-date"  id="liveDate"></div>
     </div>
@@ -90,7 +93,7 @@
     {{-- Flash result --}}
     @if(session('scan_result'))
         @php $res = session('scan_result'); @endphp
-        <div class="atd-result {{ $res['type'] }}">
+        <div class="atd-result {{ $res['type'] }} scan-hide-on-active">
             <div class="atd-result-icon">{{ $res['type']==='success' ? '✅' : '❌' }}</div>
             <div class="atd-result-body">
                 @if($res['type']==='success')
@@ -107,7 +110,7 @@
     @endif
 
     @if($errors->any())
-        <div class="atd-result error">
+        <div class="atd-result error scan-hide-on-active">
             <div class="atd-result-icon">❌</div>
             <div class="atd-result-body"><h6>Error</h6><p>{{ $errors->first() }}</p></div>
         </div>
@@ -130,7 +133,7 @@
         $autoLabel = in_array($autoDefault, $ciTypes) ? 'Check-In' : 'Check-Out';
         $autoEmoji = in_array($autoDefault, $ciTypes) ? '🟢' : '🔵';
     @endphp
-    <button type="button" class="atd-scan-btn" id="btnScan">
+    <button type="button" class="atd-scan-btn scan-hide-on-active" id="btnScan">
         <span class="btn-icon">📷</span>
         <span class="btn-label">Scan Attendance</span>
         <span class="btn-sub" id="btnScanSub">Auto: {{ $autoEmoji }} {{ $autoLabel }}</span>
@@ -169,7 +172,7 @@
     <div id="scanMsg" class="atd-msg"></div>
 
     {{-- Today's summary --}}
-    <div class="atd-summary-card">
+    <div class="atd-summary-card scan-hide-on-active">
         <div class="atd-summary-header">Today's Scan Summary</div>
         @php
             $summaryRows = [
@@ -196,7 +199,7 @@
     </div>
 
     @if($session)
-    <div class="atd-stats">
+    <div class="atd-stats scan-hide-on-active">
         <div class="atd-stat-box">
             <div class="n">{{ number_format($session->work_minutes/60,1) }}h</div>
             <div class="l">Work Hrs</div>
@@ -243,6 +246,7 @@ window.addEventListener('load', function () {
     const latInp     = document.getElementById('latInput');
     const lngInp     = document.getElementById('lngInput');
     const msgEl      = document.getElementById('scanMsg');
+    const wrapEl     = document.querySelector('.atd-wrap');
     const qrBoxEl    = document.getElementById('qrBox');
     const qrStatusEl = document.getElementById('qrStatus');
     const cancelBtn  = document.getElementById('cancelBtn');
@@ -256,6 +260,7 @@ window.addEventListener('load', function () {
     function showMsg(t,k='info'){msgEl.textContent=t;msgEl.className='atd-msg visible '+k;}
     function hideMsg(){msgEl.className='atd-msg';}
     function setStatus(t){if(qrStatusEl)qrStatusEl.textContent=t;}
+    function setScanningUI(active){if(wrapEl)wrapEl.classList.toggle('scanning',active);}
 
     /* Type selector */
     function setActiveType(type){
@@ -298,11 +303,12 @@ window.addEventListener('load', function () {
         typeInput.value=currentType;
         qrTokenInp.value='';
         submitted=false;
+        try{
+        setScanningUI(true);
         qrBoxEl.classList.add('visible');
         if(cancelBtn)cancelBtn.style.display='block';
         setStatus('🎯 Point camera at the QR code…');
         if(!scanner) scanner=new Html5Qrcode('qrReader');
-        try{
             await scanner.start(
                 {facingMode:'environment'},
                 {fps:12, qrbox:function(w,h){const s=Math.min(w,h)*0.7;return{width:s,height:s};}},
@@ -320,7 +326,9 @@ window.addEventListener('load', function () {
                         if(!ok){
                             showMsg('Location access denied. Please allow GPS and try again.','danger');
                             setStatus('⚠ Location denied.');
-                            if(cancelBtn)cancelBtn.style.display='block';
+                            if(qrBoxEl)qrBoxEl.classList.remove('visible');
+                            if(cancelBtn)cancelBtn.style.display='none';
+                            setScanningUI(false);
                             submitted=false;
                             return;
                         }
@@ -333,6 +341,7 @@ window.addEventListener('load', function () {
             scanRunning=true;
         }catch(err){
             scanRunning=false;
+            setScanningUI(false);
             qrBoxEl.classList.remove('visible');
             if(cancelBtn)cancelBtn.style.display='none';
             if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')
@@ -350,6 +359,7 @@ window.addEventListener('load', function () {
         submitted=false;
         if(scanner&&scanRunning){try{await scanner.stop();}catch(_){}}
         scanRunning=false;
+        setScanningUI(false);
         if(qrBoxEl)qrBoxEl.classList.remove('visible');
         if(cancelBtn)cancelBtn.style.display='none';
         hideMsg();

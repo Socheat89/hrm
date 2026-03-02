@@ -76,7 +76,6 @@
     </div>
 
     @if($activeTab !== 'rejected')
-    @php $detailMap = []; @endphp
     <div class="bg-white rounded-b-xl shadow-sm border border-t-0 border-slate-200">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
@@ -112,7 +111,7 @@
                             ? 'https://maps.google.com/?q=' . number_format((float) $log->latitude, 6, '.', '') . ',' . number_format((float) $log->longitude, 6, '.', '')
                             : null;
 
-                        $detailMap[$log->id]=[
+                        $detail = [
                             'employee'=>$log->employee->user->name,
                             'emp_id'=>$log->employee->employee_id,
                             'department'=>$log->employee->department?->name ?? 'N/A',
@@ -150,7 +149,7 @@
                         <td class="py-3 px-4 text-right">
                             <button type="button" 
                                 x-data="" 
-                                x-on:click="$dispatch('open-modal', 'detailModal'); $dispatch('load-detail', '{{ $log->id }}')" 
+                                x-on:click='$dispatch("show-detail", @js($detail))' 
                                 class="inline-flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-800">
                                 Detail
                             </button>
@@ -226,11 +225,9 @@
     <!-- Detail Modal -->
     <div x-data="{ 
             open: false,
-            details: @js($detailMap ?? []),
             d: null
          }" 
-         x-on:open-modal.window="if ($event.detail === 'detailModal') open = true"
-         x-on:load-detail.window="d = details[$event.detail]"
+         x-on:show-detail.window="d = $event.detail; open = true"
          x-show="open" 
          class="fixed inset-0 z-[100] overflow-y-auto" 
          style="display: none;"

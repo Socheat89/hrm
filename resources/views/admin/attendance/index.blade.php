@@ -99,6 +99,9 @@
                         $startAt = $schedule?->morning_in ? \Carbon\Carbon::parse($selectedDate . ' ' . $schedule->morning_in) : null;
                         $endAt = $schedule?->evening_out ? \Carbon\Carbon::parse($selectedDate . ' ' . $schedule->evening_out) : null;
                         $isLate = $startAt && $endAt && $scanAt->gt($startAt) && $scanAt->lt($endAt);
+                        $scanLabel = in_array($log->scan_type, ['morning_in', 'lunch_in'], true)
+                            ? 'Check-In'
+                            : (in_array($log->scan_type, ['lunch_out', 'evening_out'], true) ? 'Check-Out' : '-');
 
                         if ($activeTab === 'late' && !$isLate) {
                             continue;
@@ -125,7 +128,7 @@
                             'gps'=>$log->has_fake_gps?'Flagged':'Verified',
                             'distance'=>$log->distance_from_branch?round($log->distance_from_branch).'m':'-',
                             'location'=>$locationLink,
-                            'scans'=>['Scan Type'=>ucwords(str_replace('_',' ', $log->scan_type ?? '-')),'Scan Time'=>$scanAt->format('H:i:s')],
+                            'scans'=>['Scan'=>$scanLabel,'Scan Time'=>$scanAt->format('H:i:s')],
                         ];
                     @endphp
                     <tr class="hover:bg-slate-50 transition-colors">
@@ -134,7 +137,7 @@
                             <div class="text-xs text-slate-500">{{ $log->employee->employee_id }}</div>
                         </td>
                         <td class="py-3 px-4 text-sm text-slate-600">{{ $log->employee->branch?->name??'-' }}</td>
-                        <td class="py-3 px-4 text-sm text-slate-700">{{ ucwords(str_replace('_',' ', $log->scan_type ?? '-')) }}</td>
+                        <td class="py-3 px-4 text-sm text-slate-700">{{ $scanLabel }}</td>
                         <td class="py-3 px-4 text-sm text-slate-600">{{ $scanAt->format('Y-m-d H:i:s') }}</td>
                         <td class="py-3 px-4">
                             @if($isLate)

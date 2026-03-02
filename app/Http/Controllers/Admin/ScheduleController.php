@@ -54,6 +54,7 @@ class ScheduleController extends Controller
     {
         $data = $request->validated();
         $scanTimes = (int) ($data['scan_times'] ?? 4);
+        $isAllDays = (int) ($data['day_of_week'] ?? -1) === -1;
 
         unset($data['scan_times']);
 
@@ -64,6 +65,18 @@ class ScheduleController extends Controller
 
         $data['late_grace_minutes'] = (int) ($data['late_grace_minutes'] ?? 0);
         $data['early_leave_grace_minutes'] = (int) ($data['early_leave_grace_minutes'] ?? 0);
+
+        if ($isAllDays) {
+            foreach (array_keys(self::DAY_NAMES) as $dayNumber) {
+                Schedule::query()->updateOrCreate(
+                    ['branch_id' => $data['branch_id'], 'day_of_week' => $dayNumber],
+                    array_merge($data, ['day_of_week' => $dayNumber])
+                );
+            }
+
+            return redirect()->route('admin.schedules.index', ['branch_id' => $data['branch_id']])
+                ->with('status', 'Schedule saved for all days.');
+        }
 
         // Upsert on branch_id + day_of_week (update if exists)
         Schedule::query()->updateOrCreate(
@@ -90,6 +103,7 @@ class ScheduleController extends Controller
     {
         $data = $request->validated();
         $scanTimes = (int) ($data['scan_times'] ?? 4);
+        $isAllDays = (int) ($data['day_of_week'] ?? -1) === -1;
 
         unset($data['scan_times']);
 
@@ -100,6 +114,18 @@ class ScheduleController extends Controller
 
         $data['late_grace_minutes'] = (int) ($data['late_grace_minutes'] ?? 0);
         $data['early_leave_grace_minutes'] = (int) ($data['early_leave_grace_minutes'] ?? 0);
+
+        if ($isAllDays) {
+            foreach (array_keys(self::DAY_NAMES) as $dayNumber) {
+                Schedule::query()->updateOrCreate(
+                    ['branch_id' => $data['branch_id'], 'day_of_week' => $dayNumber],
+                    array_merge($data, ['day_of_week' => $dayNumber])
+                );
+            }
+
+            return redirect()->route('admin.schedules.index', ['branch_id' => $data['branch_id']])
+                ->with('status', 'Schedule updated for all days.');
+        }
 
         $schedule->update($data);
 

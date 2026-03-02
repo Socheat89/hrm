@@ -29,6 +29,7 @@
                     <label class="block text-sm font-medium text-slate-700 mb-1">Day of Week</label>
                     <select name="day_of_week" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 @error('day_of_week') border-red-500 @enderror" required>
                         <option value="">Select Day</option>
+                        <option value="-1" @selected(old('day_of_week', $selected['day_of_week'] ?? '') == '-1')>All Days</option>
                         @foreach($dayNames as $num => $name)
                             <option value="{{ $num }}" @selected(old('day_of_week', $selected['day_of_week'] ?? '') == $num)>{{ $name }}</option>
                         @endforeach

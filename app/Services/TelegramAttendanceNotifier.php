@@ -4,12 +4,16 @@ namespace App\Services;
 
 use App\Models\AttendanceLog;
 use App\Models\CompanySetting;
+use App\Models\Schedule;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TelegramAttendanceNotifier
 {
     private const CHECK_IN_TYPES = ['morning_in', 'lunch_in'];
+    private const FULL_FLOW = ['morning_in', 'lunch_out', 'lunch_in', 'evening_out'];
+    private const TWO_FLOW = ['morning_in', 'evening_out'];
 
     public function sendScan(AttendanceLog $log): void
     {
@@ -36,9 +40,7 @@ class TelegramAttendanceNotifier
             $position = $log->employee?->position ?? 'N/A';
             $branchName = $log->branch?->name ?? ('Branch #' . $log->branch_id);
             $scanLabel = in_array($log->scan_type, self::CHECK_IN_TYPES, true) ? 'Check-In' : 'Check-Out';
-
-            $lateMinutes = (int) ($log->attendanceSession?->late_minutes ?? 0);
-            $isLate = in_array($log->scan_type, self::CHECK_IN_TYPES, true) && $lateMinutes > 0;
+            $isLate = $this->isLateForScanType($log);
             $status = $scanLabel . ' ' . ($isLate ? '🔴 Late' : '🔵 Good');
 
             $distanceText = $log->distance_from_branch !== null
@@ -91,5 +93,52 @@ class TelegramAttendanceNotifier
                 'error' => $exception->getMessage(),
             ]);
         }
+    }
+
+    private function isLateForScanType(AttendanceLog $log): bool
+    {
+        if (! $log->scanned_at || ! $log->branch_id) {
+            return false;
+        }
+
+        $scanDate = Carbon::parse($log->scanned_at);
+        $dateOnly = $scanDate->toDateString();
+
+        $schedule = Schedule::query()
+            ->where('branch_id', $log->branch_id)
+            ->where('day_of_week', (int) $scanDate->dayOfWeek)
+            ->first();
+
+        if (! $schedule) {
+            return false;
+        }
+
+        $scheduleTimes = [
+            'morning_in'  => $schedule->morning_in,
+            'lunch_out'   => $schedule->lunch_out,
+            'lunch_in'    => $schedule->lunch_in,
+            'evening_out' => $schedule->evening_out,
+        ];
+
+        if (empty($scheduleTimes[$log->scan_type])) {
+            return false;
+        }
+
+        $flow = (! $schedule->lunch_out && ! $schedule->lunch_in) ? self::TWO_FLOW : self::FULL_FLOW;
+        $start = Carbon::parse($dateOnly . ' ' . $scheduleTimes[$log->scan_type]);
+
+        $end = Carbon::parse($dateOnly)->endOfDay();
+        $currentIndex = array_search($log->scan_type, $flow, true);
+        if ($currentIndex !== false) {
+            for ($next = $currentIndex + 1; $next < count($flow); $next++) {
+                $nextType = $flow[$next];
+                if (! empty($scheduleTimes[$nextType])) {
+                    $end = Carbon::parse($dateOnly . ' ' . $scheduleTimes[$nextType]);
+                    break;
+                }
+            }
+        }
+
+        return $scanDate->gt($start) && $scanDate->lte($end);
     }
 }

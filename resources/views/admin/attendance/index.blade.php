@@ -7,7 +7,7 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-center flex flex-col justify-center items-center">
             <div class="text-3xl font-bold text-blue-600 mb-1">{{ $summary['total'] }}</div>
-            <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Present</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Scans</div>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-center flex flex-col justify-center items-center">
             <div class="text-3xl font-bold text-orange-500 mb-1">{{ $summary['late'] }}</div>
@@ -84,94 +84,84 @@
                     <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
                         <th class="py-3 px-4">Employee</th>
                         <th class="py-3 px-4">Branch</th>
-                        <th class="py-3 px-4">Check-In 1</th>
-                        <th class="py-3 px-4">Check-Out 1</th>
-                        <th class="py-3 px-4">Check-In 2</th>
-                        <th class="py-3 px-4">Check-Out 2</th>
+                        <th class="py-3 px-4">Scan</th>
+                        <th class="py-3 px-4">Date/Time</th>
                         <th class="py-3 px-4">Status</th>
-                        <th class="py-3 px-4">Hours</th>
-                        <th class="py-3 px-4">OT</th>
+                        <th class="py-3 px-4">Distance</th>
                         <th class="py-3 px-4 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                @forelse($attendanceSessions as $session)
+                @forelse($attendanceLogs as $log)
                     @php
-                        $mIn  = optional($session->logs->firstWhere('scan_type','morning_in'))->scanned_at?->format('H:i');
-                        $lOut = optional($session->logs->firstWhere('scan_type','lunch_out'))->scanned_at?->format('H:i');
-                        $lIn  = optional($session->logs->firstWhere('scan_type','lunch_in'))->scanned_at?->format('H:i');
-                        $eOut = optional($session->logs->firstWhere('scan_type','evening_out'))->scanned_at?->format('H:i');
-                        $mLog = $session->logs->firstWhere('scan_type','morning_in');
-                        $statusText = $session->late_minutes > 0
-                            ? '🔴 Late (' . $session->late_minutes . ' នាទី)'
-                            : '🔵 Good';
-                        $locationLink = ($mLog?->latitude !== null && $mLog?->longitude !== null)
-                            ? 'https://maps.google.com/?q=' . number_format((float) $mLog->latitude, 6, '.', '') . ',' . number_format((float) $mLog->longitude, 6, '.', '')
+                        $schedule = $scheduleMap[$log->branch_id] ?? null;
+                        $scanAt = \Carbon\Carbon::parse($log->scanned_at);
+                        $startAt = $schedule?->morning_in ? \Carbon\Carbon::parse($selectedDate . ' ' . $schedule->morning_in) : null;
+                        $endAt = $schedule?->evening_out ? \Carbon\Carbon::parse($selectedDate . ' ' . $schedule->evening_out) : null;
+                        $isLate = $startAt && $endAt && $scanAt->gt($startAt) && $scanAt->lt($endAt);
+
+                        if ($activeTab === 'late' && !$isLate) {
+                            continue;
+                        }
+
+                        $statusText = $isLate ? '🔴 Late' : '🔵 Good';
+                        $locationLink = ($log->latitude !== null && $log->longitude !== null)
+                            ? 'https://maps.google.com/?q=' . number_format((float) $log->latitude, 6, '.', '') . ',' . number_format((float) $log->longitude, 6, '.', '')
                             : null;
-                        $detailMap[$session->id]=[
-                            'employee'=>$session->employee->user->name,
-                            'emp_id'=>$session->employee->employee_id,
-                            'department'=>$session->employee->department?->name ?? 'N/A',
-                            'position'=>$session->employee->position ?? 'N/A',
-                            'branch'=>$session->employee->branch?->name??'-',
+
+                        $detailMap[$log->id]=[
+                            'employee'=>$log->employee->user->name,
+                            'emp_id'=>$log->employee->employee_id,
+                            'department'=>$log->employee->department?->name ?? 'N/A',
+                            'position'=>$log->employee->position ?? 'N/A',
+                            'branch'=>$log->employee->branch?->name??'-',
                             'status'=>$statusText,
-                            'date'=>$session->attendance_date->toDateString(),
-                            'datetime'=>($mLog?->scanned_at?->format('Y-m-d H:i:s')) ?? ($session->attendance_date->toDateString() . ' --:--:--'),
-                            'late'=>$session->late_minutes,
-                            'early'=>$session->early_leave_minutes,
-                            'hours'=>round($session->work_minutes/60,2),
-                            'overtime'=>round($session->overtime_minutes/60,2),
-                            'gps'=>$session->has_fake_gps_flag?'Flagged':'Verified',
-                            'distance'=>$mLog?->distance_from_branch?round($mLog->distance_from_branch).'m':'-',
+                            'date'=>$scanAt->toDateString(),
+                            'datetime'=>$scanAt->format('Y-m-d H:i:s'),
+                            'late'=>$isLate ? 1 : 0,
+                            'early'=>0,
+                            'hours'=>0,
+                            'overtime'=>0,
+                            'gps'=>$log->has_fake_gps?'Flagged':'Verified',
+                            'distance'=>$log->distance_from_branch?round($log->distance_from_branch).'m':'-',
                             'location'=>$locationLink,
-                            'scans'=>['Check-In 1'=>$mIn?:'-','Check-Out 1'=>$lOut?:'-','Check-In 2'=>$lIn?:'-','Check-Out 2'=>$eOut?:'-'],
+                            'scans'=>['Scan Type'=>ucwords(str_replace('_',' ', $log->scan_type ?? '-')),'Scan Time'=>$scanAt->format('H:i:s')],
                         ];
                     @endphp
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="py-3 px-4">
-                            <div class="font-medium text-slate-800">{{ $session->employee->user->name }}</div>
-                            <div class="text-xs text-slate-500">{{ $session->employee->employee_id }}</div>
+                            <div class="font-medium text-slate-800">{{ $log->employee->user->name }}</div>
+                            <div class="text-xs text-slate-500">{{ $log->employee->employee_id }}</div>
                         </td>
-                        <td class="py-3 px-4 text-sm text-slate-600">{{ $session->employee->branch?->name??'-' }}</td>
-                        <td class="py-3 px-4 text-sm">
-                            @if($mIn)
-                                <span class="{{ $session->late_minutes>0?'text-orange-600 font-semibold':'text-slate-700' }}">{{ $mIn }}</span>
-                            @else <span class="text-slate-400">—</span>@endif
-                        </td>
-                        <td class="py-3 px-4 text-sm text-slate-600">{{ $lOut??'—' }}</td>
-                        <td class="py-3 px-4 text-sm text-slate-600">{{ $lIn??'—' }}</td>
-                        <td class="py-3 px-4 text-sm text-slate-600">{{ $eOut??'—' }}</td>
+                        <td class="py-3 px-4 text-sm text-slate-600">{{ $log->employee->branch?->name??'-' }}</td>
+                        <td class="py-3 px-4 text-sm text-slate-700">{{ ucwords(str_replace('_',' ', $log->scan_type ?? '-')) }}</td>
+                        <td class="py-3 px-4 text-sm text-slate-600">{{ $scanAt->format('Y-m-d H:i:s') }}</td>
                         <td class="py-3 px-4">
-                            @if($session->late_minutes>0)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">🔴 Late ({{ $session->late_minutes }} នាទី)</span>
+                            @if($isLate)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">🔴 Late</span>
                             @else
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">🔵 Good</span>
                             @endif
                         </td>
-                        <td class="py-3 px-4 text-sm text-slate-600">{{ number_format($session->work_minutes/60,2) }}h</td>
-                        <td class="py-3 px-4 text-sm">
-                            @if($session->overtime_minutes>0)
-                                <span class="text-teal-600 font-medium">{{ number_format($session->overtime_minutes/60,2) }}h</span>
-                            @else <span class="text-slate-400">—</span>@endif
-                        </td>
+                        <td class="py-3 px-4 text-sm text-slate-600">{{ $log->distance_from_branch ? round($log->distance_from_branch) . ' m' : '—' }}</td>
                         <td class="py-3 px-4 text-right">
                             <button type="button" 
                                 x-data="" 
-                                x-on:click="$dispatch('open-modal', 'detailModal'); $dispatch('load-detail', '{{ $session->id }}')" 
+                                x-on:click="$dispatch('open-modal', 'detailModal'); $dispatch('load-detail', '{{ $log->id }}')" 
                                 class="inline-flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-800">
                                 Detail
                             </button>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="10" class="py-8 text-center text-slate-500">No attendance data for selected filters.</td></tr>
+                    <tr><td colspan="7" class="py-8 text-center text-slate-500">No attendance data for selected filters.</td></tr>
                 @endforelse
                 </tbody>
             </table>
         </div>
-        @if(method_exists($attendanceSessions, 'links'))
+        @if(method_exists($attendanceLogs, 'links'))
         <div class="p-4 border-t border-slate-200">
-            {{ $attendanceSessions->links() }}
+            {{ $attendanceLogs->links() }}
         </div>
         @endif
     </div>

@@ -17,7 +17,10 @@ class ChangeDayoffRequestController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.change-dayoff-requests.index', compact('changeDayoffRequests'));
+        return view('admin.change-dayoff-requests.index', [
+            'changeDayoffRequests' => $changeDayoffRequests,
+            'dayoffRequests' => $changeDayoffRequests,
+        ]);
     }
 
     public function updateStatus(Request $request, ChangeDayoffRequest $changeDayoffRequest)

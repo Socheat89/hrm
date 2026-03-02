@@ -55,7 +55,7 @@ php artisan serve
 
 ## Default Accounts
 
-- Super Admin: `superadmin@hrm.local` / `password123`
+- Super Admin: `superadmin@hrm.local` / ` `
 - Admin HR: `hr@hrm.local` / `password123`
 - Employee: `employee@hrm.local` / `password123`
 
@@ -67,6 +67,21 @@ php artisan serve
 4. Run `php artisan migrate --seed` once.
 5. Run `php artisan storage:link`.
 6. Ensure `storage/` and `bootstrap/cache/` are writable.
+
+### Quick Repair (500 error)
+
+If you get `500 Internal Server Error` on cPanel, run this from project root:
+
+```bash
+chmod +x scripts/cpanel_repair.sh
+bash scripts/cpanel_repair.sh
+```
+
+The script automatically:
+- fixes `public/storage` symlink issues,
+- clears/rebuilds Laravel caches,
+- reapplies required permissions,
+- creates a safe root `index.php` + `.htaccess` fallback for hosts that cannot point document root to `/public`.
 
 No WebSocket server is required.
 

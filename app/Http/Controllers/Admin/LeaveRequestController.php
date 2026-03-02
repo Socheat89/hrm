@@ -32,11 +32,6 @@ class LeaveRequestController extends Controller
             'admin_comment' => $request->validated('admin_comment'),
         ]);
 
-        if ($status === 'approved') {
-            $employee = $leaveRequest->employee;
-            $employee->decrement('leave_balance_days', (float) $leaveRequest->days);
-        }
-
         return back()->with('status', 'Leave request updated.');
     }
 }

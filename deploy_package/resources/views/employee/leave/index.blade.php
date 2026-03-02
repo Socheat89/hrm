@@ -2,27 +2,6 @@
     <style>
         [x-cloak] { display: none !important; }
         
-        .balance-card {
-            background: linear-gradient(135deg, #12395f 0%, #2a5b8e 100%);
-            color: #fff;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 15px 30px rgba(17, 40, 72, 0.15);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .balance-card::after {
-            content: '';
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
         .nav-pills-custom {
             background: #fff;
             padding: 5px;
@@ -139,20 +118,6 @@
     </style>
 
     <div x-data="{ tab: 'leave', isRequesting: false }">
-        <!-- Dashboard Summary / Balance -->
-        <section class="balance-card p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="d-block mb-1 opacity-75" style="font-size: 0.85rem;">Available Leave Balance</span>
-                    <h2 class="mb-0 fw-bold" style="font-size: 2rem;">{{ number_format($employee->leave_balance_days, 1) }} <span style="font-size: 1rem; font-weight: 500; opacity: 0.8;">Days</span></h2>
-                </div>
-                <!-- Optional graphic/icon -->
-                <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 16px;">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                </div>
-            </div>
-        </section>
-
         <!-- Start Request Toggle Button -->
         <div class="d-flex justify-content-center mb-4" x-show="!isRequesting" x-transition>
             <button @click="isRequesting = true" class="btn btn-submit d-flex align-items-center justify-content-center gap-2" style="font-size: 1.05rem; padding: 0.9rem;">

@@ -34,7 +34,7 @@ class LeaveController extends Controller
 
         $leaveTypes = LeaveType::query()->orderBy('name')->get();
 
-        return view('employee.leave.index', compact('leaveRequests', 'otRequests', 'dayoffRequests', 'leaveTypes', 'employee'));
+        return view('employee.leave.index', compact('leaveRequests', 'otRequests', 'dayoffRequests', 'leaveTypes'));
     }
 
     public function store(StoreLeaveRequestRequest $request)

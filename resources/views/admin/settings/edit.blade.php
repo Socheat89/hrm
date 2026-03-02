@@ -125,23 +125,47 @@
                         </div>
                     </div>
 
-                    <div class="mt-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                        <div class="md:col-span-12">
-                            <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-lg p-3 w-full">
-                                <input type="hidden" name="telegram_scan_enabled" value="0">
-                                <input type="checkbox" id="telegram_scan_enabled" name="telegram_scan_enabled" value="1" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-5 h-5 transition-colors cursor-pointer" @checked(old('telegram_scan_enabled', $setting->telegram_scan_enabled))>
-                                <label for="telegram_scan_enabled" class="text-sm font-medium text-slate-700 mb-0 cursor-pointer select-none">Send attendance scan to Telegram group</label>
+                    <div class="mt-6 border border-slate-200 rounded-xl bg-slate-50 overflow-hidden">
+                        <div class="p-4 bg-gradient-to-r from-slate-50 to-white">
+                            <input type="hidden" name="telegram_scan_enabled" value="0">
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" id="telegram_scan_enabled" name="telegram_scan_enabled" value="1" class="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-5 h-5 transition-colors shrink-0" @checked(old('telegram_scan_enabled', $setting->telegram_scan_enabled))>
+                                <div class="min-w-0">
+                                    <label for="telegram_scan_enabled" class="block text-sm font-semibold text-slate-700 cursor-pointer">Send attendance scan to Telegram group</label>
+                                    <p class="text-xs text-slate-500 mt-1 mb-0">Enable this to notify your Telegram group every time an attendance scan is recorded.</p>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="md:col-span-6">
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Telegram Bot Token</label>
-                            <input type="text" name="telegram_bot_token" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('telegram_bot_token', $setting->telegram_bot_token) }}" placeholder="e.g. 123456789:ABCDEF...">
-                        </div>
+                        <div class="border-t border-slate-200 bg-white p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h5 class="text-sm font-semibold text-slate-700">Telegram Connection</h5>
+                                <span class="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">Secure Fields</span>
+                            </div>
 
-                        <div class="md:col-span-6">
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Telegram Chat ID / Group ID</label>
-                            <input type="text" name="telegram_chat_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('telegram_chat_id', $setting->telegram_chat_id) }}" placeholder="e.g. -1001234567890">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Telegram Bot Token</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2h-1V9a5 5 0 00-10 0v2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                                        </span>
+                                        <input type="text" name="telegram_bot_token" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 pl-10 font-mono text-sm" value="{{ old('telegram_bot_token', $setting->telegram_bot_token) }}" placeholder="e.g. 123456789:ABCDEF...">
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-2">Paste the bot token from @BotFather.</p>
+                                </div>
+
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Telegram Chat ID / Group ID</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-4a3 3 0 00-3-3h-4a3 3 0 00-3 3v4m10 0H7m10 0h-4m-6 0h4m2-10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                        </span>
+                                        <input type="text" name="telegram_chat_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 pl-10 font-mono text-sm" value="{{ old('telegram_chat_id', $setting->telegram_chat_id) }}" placeholder="e.g. -1001234567890">
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-2">Use a group/channel chat ID (usually starts with -100).</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -74,11 +74,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('schedules', ScheduleController::class)->except(['show']);
 
-        Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index')->middleware('role:Super Admin');
-        Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit')->middleware('role:Super Admin');
-        Route::put('/settings', [SettingController::class, 'update'])->name('settings.update')->middleware('role:Super Admin');
+        Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+        Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
+        Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
 
-        Route::resource('branches', BranchController::class)->middleware('role:Super Admin');
+        Route::resource('branches', BranchController::class);
     });
 
     Route::prefix('employee')->as('employee.')->middleware('role:Employee')->group(function () {

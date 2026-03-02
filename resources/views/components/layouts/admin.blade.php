@@ -102,7 +102,7 @@
                     Payroll
                 </a>
 
-                @if(auth()->user()->hasRole('Super Admin'))
+                @if(auth()->user()->hasAnyRole(['Super Admin', 'Admin / HR']))
                     <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Organization</p>
                     <a href="{{ route('admin.branches.index') }}" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.branches.*') || request()->routeIs('admin.departments.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
                         <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.branches.*') || request()->routeIs('admin.departments.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>

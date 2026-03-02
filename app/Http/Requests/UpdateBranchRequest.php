@@ -8,7 +8,7 @@ class UpdateBranchRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasRole('Super Admin') ?? false;
+        return $this->user()?->hasAnyRole(['Super Admin', 'Admin / HR']) ?? false;
     }
 
     public function rules(): array

@@ -11,7 +11,8 @@ class TelegramAttendanceNotifier
 {
     public function sendScan(AttendanceLog $log): void
     {
-        $setting = CompanySetting::query()->first();
+        $setting = CompanySetting::query()->find(1)
+            ?? CompanySetting::query()->latest('id')->first();
 
         if (! $setting?->telegram_scan_enabled) {
             return;
@@ -47,10 +48,22 @@ class TelegramAttendanceNotifier
                 ])
                 ->throw();
         } catch (\Throwable $exception) {
-            Log::warning('Telegram attendance notification failed.', [
-                'attendance_log_id' => $log->id,
-                'error' => $exception->getMessage(),
-            ]);
+            try {
+                Http::asForm()
+                    ->withoutVerifying()
+                    ->timeout(8)
+                    ->post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                        'chat_id' => $chatId,
+                        'text' => $message,
+                    ])
+                    ->throw();
+            } catch (\Throwable $fallbackException) {
+                Log::warning('Telegram attendance notification failed.', [
+                    'attendance_log_id' => $log->id,
+                    'error' => $exception->getMessage(),
+                    'fallback_error' => $fallbackException->getMessage(),
+                ]);
+            }
         }
     }
 }

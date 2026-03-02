@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 
 class TelegramAttendanceNotifier
 {
+    private const CHECK_IN_TYPES = ['morning_in', 'lunch_in'];
+
     public function sendScan(AttendanceLog $log): void
     {
         try {
@@ -26,18 +28,45 @@ class TelegramAttendanceNotifier
                 return;
             }
 
-            $log->loadMissing(['employee.user', 'branch']);
+            $log->loadMissing(['employee.user', 'employee.department', 'branch', 'attendanceSession']);
 
             $employeeName = $log->employee?->user?->name ?? ('Employee #' . $log->employee_id);
+            $employeeCode = $log->employee?->employee_id ?? ('EMP-' . $log->employee_id);
+            $departmentName = $log->employee?->department?->name ?? 'N/A';
+            $position = $log->employee?->position ?? 'N/A';
             $branchName = $log->branch?->name ?? ('Branch #' . $log->branch_id);
-            $scanLabel = AttendanceService::LABELS[$log->scan_type] ?? $log->scan_type;
+            $scanLabel = in_array($log->scan_type, self::CHECK_IN_TYPES, true) ? 'Check-In' : 'Check-Out';
+
+            $lateMinutes = (int) ($log->attendanceSession?->late_minutes ?? 0);
+            $isLate = in_array($log->scan_type, self::CHECK_IN_TYPES, true) && $lateMinutes > 0;
+            $status = $isLate
+                ? sprintf('Late (🔴 Late (%d នាទី))', $lateMinutes)
+                : sprintf('%s (🔵 Good)', $scanLabel);
+
+            $distanceText = $log->distance_from_branch !== null
+                ? round((float) $log->distance_from_branch) . ' m'
+                : 'N/A';
+
+            $locationText = 'N/A';
+            if ($log->latitude !== null && $log->longitude !== null) {
+                $locationText = sprintf(
+                    'https://maps.google.com/?q=%s,%s',
+                    number_format((float) $log->latitude, 6, '.', ''),
+                    number_format((float) $log->longitude, 6, '.', '')
+                );
+            }
 
             $message = implode("\n", [
-                '📌 Attendance Scan',
-                '👤 Employee: ' . $employeeName,
-                '🏢 Branch: ' . $branchName,
-                '🕒 Type: ' . $scanLabel,
-                '⏱ Time: ' . $log->scanned_at?->format('Y-m-d H:i:s'),
+                'Name : ' . $employeeName,
+                'Status : ' . $status,
+                '-------------------------------------',
+                'ID : ' . $employeeCode,
+                'Department : ' . $departmentName,
+                'Position : ' . $position,
+                'Date/Time : ' . ($log->scanned_at?->format('Y-m-d H:i:s') ?? now()->format('Y-m-d H:i:s')),
+                'Area : ' . $branchName,
+                'Distance : ' . $distanceText,
+                'Location : ' . $locationText,
             ]);
 
             try {

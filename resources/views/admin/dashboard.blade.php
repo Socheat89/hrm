@@ -1,38 +1,47 @@
 <x-layouts.admin>
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Dashboard Overview</h2>
+    <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h2 class="text-2xl font-bold tracking-tight text-slate-800">Dashboard Overview</h2>
+                <p class="mt-1 text-sm text-slate-500">Daily snapshot of attendance, leave activity, and payroll impact.</p>
+            </div>
+            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                {{ now()->format('d M Y') }}
+            </span>
+        </div>
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-            <small class="text-slate-500 font-medium uppercase tracking-wider text-xs">Total Employees</small>
-            <h4 class="text-3xl font-bold text-slate-800 mt-2">{{ $totalEmployees }}</h4>
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <small class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Employees</small>
+            <h4 class="mt-2 text-3xl font-bold text-slate-800">{{ $totalEmployees }}</h4>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-            <small class="text-slate-500 font-medium uppercase tracking-wider text-xs">Present Today</small>
-            <h4 class="text-3xl font-bold text-green-600 mt-2">{{ $todayAttendance }}</h4>
+        <div class="rounded-2xl border border-green-200 bg-white p-5 shadow-sm">
+            <small class="text-xs font-semibold uppercase tracking-wider text-slate-500">Present Today</small>
+            <h4 class="mt-2 text-3xl font-bold text-green-600">{{ $todayAttendance }}</h4>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-            <small class="text-slate-500 font-medium uppercase tracking-wider text-xs">Late Today</small>
-            <h4 class="text-3xl font-bold text-orange-500 mt-2">{{ $lateEmployeesCount }}</h4>
+        <div class="rounded-2xl border border-orange-200 bg-white p-5 shadow-sm">
+            <small class="text-xs font-semibold uppercase tracking-wider text-slate-500">Late Today</small>
+            <h4 class="mt-2 text-3xl font-bold text-orange-500">{{ $lateEmployeesCount }}</h4>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-            <small class="text-slate-500 font-medium uppercase tracking-wider text-xs">Leave Today</small>
-            <h4 class="text-3xl font-bold text-blue-500 mt-2">{{ $onLeaveToday }}</h4>
+        <div class="rounded-2xl border border-blue-200 bg-white p-5 shadow-sm">
+            <small class="text-xs font-semibold uppercase tracking-wider text-slate-500">Leave Today</small>
+            <h4 class="mt-2 text-3xl font-bold text-blue-500">{{ $onLeaveToday }}</h4>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 col-span-2 md:col-span-4 xl:col-span-1 border-l-4 border-l-blue-600">
-            <small class="text-slate-500 font-medium uppercase tracking-wider text-xs">Monthly Payroll</small>
-            <h4 class="text-3xl font-bold text-slate-800 mt-2">${{ number_format($monthlyPayrollCost,2) }}</h4>
+        <div class="rounded-2xl border border-slate-200 bg-slate-900 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
+            <small class="text-xs font-semibold uppercase tracking-wider text-slate-300">Monthly Payroll</small>
+            <h4 class="mt-2 text-3xl font-bold text-white">${{ number_format($monthlyPayrollCost,2) }}</h4>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- Chart -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 h-full">
-                <div class="flex justify-between items-center mb-4">
-                    <h6 class="font-bold text-lg text-slate-800">Monthly Attendance</h6>
+            <div class="h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="mb-4 flex items-center justify-between">
+                    <h6 class="text-lg font-bold text-slate-800">Monthly Attendance</h6>
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">This Month</span>
                 </div>
                 <div class="relative h-72 w-full">
                     <canvas id="attendanceChart"></canvas>
@@ -45,13 +54,13 @@
         
         <!-- Late Employees -->
         <div class="lg:col-span-1">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col">
-                <div class="p-5 border-b border-slate-100">
-                    <h6 class="font-bold text-lg text-slate-800">Late Employees Today</h6>
+            <div class="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-100 p-5">
+                    <h6 class="text-lg font-bold text-slate-800">Late Employees Today</h6>
                 </div>
                 <div class="overflow-x-auto flex-1">
                     <table class="w-full text-sm text-left">
-                        <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                             <tr>
                                 <th class="px-5 py-3 font-medium">Employee</th>
                                 <th class="px-5 py-3 font-medium text-right">Late (min)</th>
@@ -74,13 +83,13 @@
 
         <!-- Pending Leaves -->
         <div class="lg:col-span-3">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="p-5 border-b border-slate-100">
-                    <h6 class="font-bold text-lg text-slate-800">Pending Leave Requests</h6>
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-100 p-5">
+                    <h6 class="text-lg font-bold text-slate-800">Pending Leave Requests</h6>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
-                        <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                             <tr>
                                 <th class="px-6 py-3 font-medium">Employee</th>
                                 <th class="px-6 py-3 font-medium">Type</th>
@@ -125,12 +134,17 @@
                 data: @json($chartValues),
                 backgroundColor: '{{ $uiCompanySetting->primary_color ?? '#1f4f82' }}',
                 borderRadius: 6,
+                maxBarThickness: 28,
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#e2e8f0' } }
+            }
         }
     });
     }

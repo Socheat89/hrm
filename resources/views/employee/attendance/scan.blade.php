@@ -172,12 +172,16 @@
     <div class="atd-summary-card">
         <div class="atd-summary-header">Today's Scan Summary</div>
         @php
-            $summaryRows = [
+            $summaryRowsMap = [
                 'morning_in'  => ['label' => 'Check-In 1',  'type' => 'in'],
                 'lunch_out'   => ['label' => 'Check-Out 1', 'type' => 'out'],
                 'lunch_in'    => ['label' => 'Check-In 2',  'type' => 'in'],
                 'evening_out' => ['label' => 'Check-Out 2', 'type' => 'out'],
             ];
+
+            $summaryRows = collect($scanFlow ?? ['morning_in', 'lunch_out', 'lunch_in', 'evening_out'])
+                ->mapWithKeys(fn ($type) => [$type => $summaryRowsMap[$type]])
+                ->all();
         @endphp
         @foreach($summaryRows as $key => $row)
             @php $log = $todayLogs->get($key); @endphp

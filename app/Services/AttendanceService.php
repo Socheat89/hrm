@@ -15,6 +15,9 @@ use Illuminate\Validation\ValidationException;
 
 class AttendanceService
 {
+    private const DEFAULT_FLOW = ['morning_in', 'lunch_out', 'lunch_in', 'evening_out'];
+    private const TWO_SCAN_FLOW = ['morning_in', 'evening_out'];
+
     /** Scan type display labels */
     public const LABELS = [
         'morning_in'  => 'Morning In',
@@ -81,14 +84,22 @@ class AttendanceService
                 ]);
             }
 
-            // 4. Scan order validation
-            $this->validateScanOrder($scanType, $existingTypes);
-
-            // 5. Schedule time-window validation
+            // 4. Schedule and scan-flow validation
             $schedule = Schedule::query()
                 ->where('branch_id', $branch->id)
                 ->where('day_of_week', (int) $today->dayOfWeek)
                 ->first();
+
+            $scanFlow = $this->resolveFlowFromSchedule($schedule);
+
+            if (! in_array($scanType, $scanFlow, true)) {
+                throw ValidationException::withMessages([
+                    'scan_type' => 'This scan type is disabled for the current attendance setting.',
+                ]);
+            }
+
+            // 5. Scan order validation
+            $this->validateScanOrder($scanType, $existingTypes, $scanFlow);
 
             if ($schedule) {
                 $this->validateTimeWindow($scanType, $schedule, $today, $now);
@@ -197,21 +208,40 @@ class AttendanceService
      */
     public function resolveNextScan(Employee $employee): array
     {
+        $today = Carbon::today();
         $session = AttendanceSession::query()
             ->with('logs')
             ->where('employee_id', $employee->id)
-            ->whereDate('attendance_date', Carbon::today())
+            ->whereDate('attendance_date', $today)
             ->first();
 
+        $schedule = Schedule::query()
+            ->where('branch_id', $employee->branch_id)
+            ->where('day_of_week', (int) $today->dayOfWeek)
+            ->first();
+
+        $scanFlow = $this->resolveFlowFromSchedule($schedule);
         $scanned = $session?->logs?->pluck('scan_type')->toArray() ?? [];
 
-        foreach (array_keys(self::PREREQUISITES) as $type) {
-            if (! in_array($type, $scanned)) {
+        foreach ($scanFlow as $type) {
+            if (! in_array($type, $scanned, true)) {
                 return [$type, (self::LABELS[$type] ?? $type) . ' Window Open', 'open'];
             }
         }
 
         return ['evening_out', 'All scans completed for today', 'completed'];
+    }
+
+    public function resolveDailyScanFlow(Employee $employee, ?Carbon $date = null): array
+    {
+        $targetDate = $date ?? Carbon::today();
+
+        $schedule = Schedule::query()
+            ->where('branch_id', $employee->branch_id)
+            ->where('day_of_week', (int) $targetDate->dayOfWeek)
+            ->first();
+
+        return $this->resolveFlowFromSchedule($schedule);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -277,9 +307,13 @@ class AttendanceService
     // Validation helpers
     // ─────────────────────────────────────────────────────────────────────────
 
-    private function validateScanOrder(string $scanType, array $existingTypes): void
+    private function validateScanOrder(string $scanType, array $existingTypes, array $scanFlow): void
     {
         foreach (self::PREREQUISITES[$scanType] ?? [] as $required) {
+            if (! in_array($required, $scanFlow, true)) {
+                continue;
+            }
+
             if (! in_array($required, $existingTypes)) {
                 $reqLabel  = self::LABELS[$required]  ?? $required;
                 $scanLabel = self::LABELS[$scanType]   ?? $scanType;
@@ -343,6 +377,19 @@ class AttendanceService
         ];
 
         return [$starts[$scanType] ?? null, $ends[$scanType] ?? null];
+    }
+
+    private function resolveFlowFromSchedule(?Schedule $schedule): array
+    {
+        if (! $schedule) {
+            return self::DEFAULT_FLOW;
+        }
+
+        if (! $schedule->lunch_out && ! $schedule->lunch_in) {
+            return self::TWO_SCAN_FLOW;
+        }
+
+        return self::DEFAULT_FLOW;
     }
 
     private function validateGps(array $payload, $branch): float

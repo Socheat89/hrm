@@ -2,7 +2,7 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
             <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Attendance Time Settings</h2>
-            <p class="text-sm text-slate-500 mt-1">Configure check-in/out time and late scan threshold</p>
+            <p class="text-sm text-slate-500 mt-1">Configure check-in/out time and scan count (2 or 4)</p>
         </div>
         <a href="{{ route('admin.schedules.create', ['branch_id' => $branchId]) }}" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -53,9 +53,7 @@
                         <th class="py-3 px-4">Lunch Out</th>
                         <th class="py-3 px-4">Lunch In</th>
                         <th class="py-3 px-4">Evening Out</th>
-                        <th class="py-3 px-4">Late Grace</th>
-                        <th class="py-3 px-4">Late After</th>
-                        <th class="py-3 px-4">Early Grace</th>
+                        <th class="py-3 px-4">Scan Count</th>
                         <th class="py-3 px-4 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -64,6 +62,7 @@
                         @php 
                             $schedule = $schedules->get($num); 
                             $hasSchedule = !is_null($schedule);
+                            $scanCount = ($schedule?->lunch_out && $schedule?->lunch_in) ? '4 Scans' : '2 Scans';
                         @endphp
                         <tr class="hover:bg-slate-50 transition-colors {{ !$hasSchedule ? 'bg-slate-50/50' : '' }}">
                             <td class="py-3 px-4 font-medium {{ $hasSchedule ? 'text-slate-800' : 'text-slate-500' }}">{{ $name }}</td>
@@ -71,15 +70,7 @@
                             <td class="py-3 px-4 text-sm {{ $hasSchedule ? 'text-slate-600' : 'text-slate-400' }}">{{ $schedule?->lunch_out  ? \Carbon\Carbon::parse($schedule->lunch_out)->format('H:i')  : '—' }}</td>
                             <td class="py-3 px-4 text-sm {{ $hasSchedule ? 'text-slate-600' : 'text-slate-400' }}">{{ $schedule?->lunch_in   ? \Carbon\Carbon::parse($schedule->lunch_in)->format('H:i')   : '—' }}</td>
                             <td class="py-3 px-4 text-sm {{ $hasSchedule ? 'text-slate-900 font-medium' : 'text-slate-400' }}">{{ $schedule?->evening_out? \Carbon\Carbon::parse($schedule->evening_out)->format('H:i'): '—' }}</td>
-                            <td class="py-3 px-4 text-sm {{ $hasSchedule ? 'text-slate-600' : 'text-slate-400' }}">{{ $schedule?->late_grace_minutes ? $schedule->late_grace_minutes . ' min' : '—' }}</td>
-                            <td class="py-3 px-4 text-sm {{ $hasSchedule ? 'text-slate-900 font-medium' : 'text-slate-400' }}">
-                                @if($schedule?->morning_in)
-                                    {{ \Carbon\Carbon::parse($schedule->morning_in)->addMinutes((int) ($schedule->late_grace_minutes ?? 0))->format('H:i') }}
-                                @else
-                                    —
-                                @endif
-                            </td>
-                            <td class="py-3 px-4 text-sm {{ $hasSchedule ? 'text-slate-600' : 'text-slate-400' }}">{{ $schedule?->early_leave_grace_minutes ? $schedule->early_leave_grace_minutes . ' min' : '—' }}</td>
+                            <td class="py-3 px-4 text-sm {{ $hasSchedule ? 'text-slate-900 font-medium' : 'text-slate-400' }}">{{ $hasSchedule ? $scanCount : '—' }}</td>
                             <td class="py-3 px-4 text-right whitespace-nowrap">
                                 @if($schedule)
                                     <a href="{{ route('admin.schedules.edit', $schedule) }}" class="inline-flex items-center justify-center text-sm font-medium text-slate-700 hover:text-blue-600 bg-white border border-slate-300 hover:border-blue-300 hover:bg-blue-50 px-3 py-1.5 rounded-md transition-colors mr-2">Edit</a>

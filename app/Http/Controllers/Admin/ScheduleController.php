@@ -53,6 +53,17 @@ class ScheduleController extends Controller
     public function store(StoreScheduleRequest $request)
     {
         $data = $request->validated();
+        $scanTimes = (int) ($data['scan_times'] ?? 4);
+
+        unset($data['scan_times']);
+
+        if ($scanTimes === 2) {
+            $data['lunch_out'] = null;
+            $data['lunch_in'] = null;
+        }
+
+        $data['late_grace_minutes'] = (int) ($data['late_grace_minutes'] ?? 0);
+        $data['early_leave_grace_minutes'] = (int) ($data['early_leave_grace_minutes'] ?? 0);
 
         // Upsert on branch_id + day_of_week (update if exists)
         Schedule::query()->updateOrCreate(
@@ -77,7 +88,20 @@ class ScheduleController extends Controller
 
     public function update(StoreScheduleRequest $request, Schedule $schedule)
     {
-        $schedule->update($request->validated());
+        $data = $request->validated();
+        $scanTimes = (int) ($data['scan_times'] ?? 4);
+
+        unset($data['scan_times']);
+
+        if ($scanTimes === 2) {
+            $data['lunch_out'] = null;
+            $data['lunch_in'] = null;
+        }
+
+        $data['late_grace_minutes'] = (int) ($data['late_grace_minutes'] ?? 0);
+        $data['early_leave_grace_minutes'] = (int) ($data['early_leave_grace_minutes'] ?? 0);
+
+        $schedule->update($data);
 
         return redirect()->route('admin.schedules.index', ['branch_id' => $schedule->branch_id])
             ->with('status', 'Schedule updated.');

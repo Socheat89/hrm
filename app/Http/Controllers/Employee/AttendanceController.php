@@ -102,10 +102,11 @@ class AttendanceController extends Controller
 
         $todayLogs = $session?->logs?->keyBy('scan_type') ?? collect();
         $scanned   = $todayLogs->keys()->toArray();
+        $scanFlow  = $this->attendanceService->resolveDailyScanFlow($employee, now());
 
         // Resolve next available Check-In and Check-Out types
-        $checkInTypes  = ['morning_in', 'lunch_in'];
-        $checkOutTypes = ['lunch_out', 'evening_out'];
+        $checkInTypes  = array_values(array_intersect(['morning_in', 'lunch_in'], $scanFlow));
+        $checkOutTypes = array_values(array_intersect(['lunch_out', 'evening_out'], $scanFlow));
 
         $nextCheckIn  = collect($checkInTypes)->first(fn($t) => !in_array($t, $scanned));
         $nextCheckOut = collect($checkOutTypes)->first(fn($t) => !in_array($t, $scanned));
@@ -113,7 +114,7 @@ class AttendanceController extends Controller
         $allDone = !$nextCheckIn && !$nextCheckOut;
 
         // Auto-default: next unscanned type in the full sequence
-        $allTypes    = ['morning_in', 'lunch_out', 'lunch_in', 'evening_out'];
+        $allTypes    = $scanFlow;
         $autoDefault = collect($allTypes)->first(fn($t) => !in_array($t, $scanned));
 
         return view('employee.attendance.scan', [
@@ -123,6 +124,7 @@ class AttendanceController extends Controller
             'allDone'        => $allDone,
             'branchName'     => $employee->branch?->name,
             'scanMode'       => $employee->branch?->scan_mode ?? 'qr',
+            'scanFlow'       => $scanFlow,
             'todayLogs'      => $todayLogs,
             'session'        => $session,
         ]);

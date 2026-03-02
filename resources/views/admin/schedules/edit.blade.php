@@ -2,7 +2,7 @@
     <div class="mb-6 flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Edit Attendance Time Setting — {{ $dayNames[$schedule->day_of_week] ?? '' }}</h2>
-            <p class="text-sm text-slate-500 mt-1">Modify check-in/out time and late scan threshold</p>
+            <p class="text-sm text-slate-500 mt-1">Modify check-in/out time and choose 2 scans or 4 scans</p>
         </div>
         <a href="{{ route('admin.schedules.index', ['branch_id' => $schedule->branch_id]) }}" class="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors flex items-center">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -35,18 +35,32 @@
 
             <div class="mb-6 pb-6 border-b border-slate-100">
                 <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">Time Settings</h3>
+
+                @php
+                    $defaultScanTimes = ($schedule->lunch_out && $schedule->lunch_in) ? '4' : '2';
+                @endphp
+
+                <div class="mb-4 max-w-xs">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Scan Times</label>
+                    <select id="scanTimes" name="scan_times" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 @error('scan_times') border-red-500 @enderror" required>
+                        <option value="2" @selected(old('scan_times', $defaultScanTimes) == '2')>2 Scans (Morning In, Evening Out)</option>
+                        <option value="4" @selected(old('scan_times', $defaultScanTimes) == '4')>4 Scans (Morning/Lunch/Evening)</option>
+                    </select>
+                    @error('scan_times')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Morning In</label>
                         <input type="time" name="morning_in" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('morning_in', substr($schedule->morning_in??'',0,5)) }}">
                     </div>
-                    <div>
+                    <div id="lunchOutWrap">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Lunch Out</label>
-                        <input type="time" name="lunch_out" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('lunch_out', substr($schedule->lunch_out??'',0,5)) }}">
+                        <input type="time" id="lunchOut" name="lunch_out" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('lunch_out', substr($schedule->lunch_out??'',0,5)) }}">
                     </div>
-                    <div>
+                    <div id="lunchInWrap">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Lunch In</label>
-                        <input type="time" name="lunch_in" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('lunch_in', substr($schedule->lunch_in??'',0,5)) }}">
+                        <input type="time" id="lunchIn" name="lunch_in" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('lunch_in', substr($schedule->lunch_in??'',0,5)) }}">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Evening Out</label>
@@ -55,30 +69,8 @@
                 </div>
             </div>
 
-            <div class="mb-8">
-                <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">Grace Periods</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Late Grace</label>
-                        <div class="relative rounded-md shadow-sm">
-                            <input type="number" name="late_grace_minutes" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 pr-16" value="{{ old('late_grace_minutes', $schedule->late_grace_minutes) }}" min="0" max="120">
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <span class="text-slate-500 sm:text-sm">minutes</span>
-                            </div>
-                        </div>
-                        <p class="mt-1 text-xs text-slate-500">Late is counted after: Morning In + Late Grace minutes.</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Early Leave Grace</label>
-                        <div class="relative rounded-md shadow-sm">
-                            <input type="number" name="early_leave_grace_minutes" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 pr-16" value="{{ old('early_leave_grace_minutes', $schedule->early_leave_grace_minutes) }}" min="0" max="120">
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <span class="text-slate-500 sm:text-sm">minutes</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <input type="hidden" name="late_grace_minutes" value="0">
+            <input type="hidden" name="early_leave_grace_minutes" value="0">
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
                 <a href="{{ route('admin.schedules.index', ['branch_id' => $schedule->branch_id]) }}" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium py-2 px-4 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1">Cancel</a>
@@ -86,4 +78,33 @@
             </div>
         </form>
     </div>
+
+    <script>
+        (function () {
+            const scanTimes = document.getElementById('scanTimes');
+            const lunchOutWrap = document.getElementById('lunchOutWrap');
+            const lunchInWrap = document.getElementById('lunchInWrap');
+            const lunchOut = document.getElementById('lunchOut');
+            const lunchIn = document.getElementById('lunchIn');
+
+            function toggleLunchFields() {
+                const isFourScans = scanTimes.value === '4';
+                lunchOutWrap.style.display = isFourScans ? '' : 'none';
+                lunchInWrap.style.display = isFourScans ? '' : 'none';
+
+                if (isFourScans) {
+                    lunchOut.setAttribute('required', 'required');
+                    lunchIn.setAttribute('required', 'required');
+                } else {
+                    lunchOut.removeAttribute('required');
+                    lunchIn.removeAttribute('required');
+                    lunchOut.value = '';
+                    lunchIn.value = '';
+                }
+            }
+
+            scanTimes.addEventListener('change', toggleLunchFields);
+            toggleLunchFields();
+        })();
+    </script>
 </x-layouts.admin>

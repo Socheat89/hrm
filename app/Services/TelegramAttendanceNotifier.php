@@ -39,9 +39,7 @@ class TelegramAttendanceNotifier
 
             $lateMinutes = (int) ($log->attendanceSession?->late_minutes ?? 0);
             $isLate = in_array($log->scan_type, self::CHECK_IN_TYPES, true) && $lateMinutes > 0;
-            $status = $isLate
-                ? sprintf('Late (🔴 Late (%d នាទី))', $lateMinutes)
-                : sprintf('%s (🔵 Good)', $scanLabel);
+            $status = $scanLabel . ' ' . ($isLate ? '🔴 Late' : '🔵 Good');
 
             $distanceText = $log->distance_from_branch !== null
                 ? round((float) $log->distance_from_branch) . ' m'

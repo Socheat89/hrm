@@ -149,8 +149,7 @@
                         <td class="py-3 px-4 text-sm text-slate-600">{{ $log->distance_from_branch ? round($log->distance_from_branch) . ' m' : '—' }}</td>
                         <td class="py-3 px-4 text-right">
                             <button type="button" 
-                                x-data="" 
-                                x-on:click="$dispatch('open-modal', 'detailModal'); $dispatch('load-detail', '{{ $log->id }}')" 
+                                x-on:click="$dispatch('attendance-detail-open', { id: {{ $log->id }} })" 
                                 class="inline-flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-800">
                                 Detail
                             </button>
@@ -229,8 +228,7 @@
             details: @js($detailMap ?? []),
             d: null
          }" 
-         x-on:open-modal.window="if ($event.detail === 'detailModal') open = true"
-         x-on:load-detail.window="d = details[$event.detail]"
+         x-on:attendance-detail-open.window="d = details[String($event.detail.id)] ?? details[$event.detail.id] ?? null; open = !!d"
          x-show="open" 
          class="fixed inset-0 z-[100] overflow-y-auto" 
          style="display: none;"

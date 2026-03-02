@@ -149,7 +149,8 @@
                         <td class="py-3 px-4 text-sm text-slate-600">{{ $log->distance_from_branch ? round($log->distance_from_branch) . ' m' : '—' }}</td>
                         <td class="py-3 px-4 text-right">
                             <button type="button" 
-                                x-on:click="$dispatch('attendance-detail-open', { id: {{ $log->id }} })" 
+                                x-data="" 
+                                x-on:click="$dispatch('open-modal', 'detailModal'); $dispatch('load-detail', '{{ $log->id }}')" 
                                 class="inline-flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-800">
                                 Detail
                             </button>
@@ -228,7 +229,8 @@
             details: @js($detailMap ?? []),
             d: null
          }" 
-         x-on:attendance-detail-open.window="d = details[String($event.detail.id)] ?? details[$event.detail.id] ?? null; open = !!d"
+         x-on:open-modal.window="if ($event.detail === 'detailModal') open = true"
+         x-on:load-detail.window="d = details[$event.detail]"
          x-show="open" 
          class="fixed inset-0 z-[100] overflow-y-auto" 
          style="display: none;"
@@ -269,36 +271,36 @@
                     </div>
                     
                     <div x-show="d" class="space-y-3 text-sm text-slate-600">
-                        <p><strong class="text-slate-800">Name :</strong> <span x-text="d?.employee"></span></p>
-                        <p><strong class="text-slate-800">Status :</strong> <span x-text="d?.status"></span></p>
+                        <p><strong class="text-slate-800">Name :</strong> <span x-text="d ? d.employee : ''"></span></p>
+                        <p><strong class="text-slate-800">Status :</strong> <span x-text="d ? d.status : ''"></span></p>
                         <p class="text-slate-300">-------------------------------------</p>
-                        <p><strong class="text-slate-800">ID :</strong> <span x-text="d?.emp_id"></span></p>
-                        <p><strong class="text-slate-800">Department :</strong> <span x-text="d?.department"></span></p>
-                        <p><strong class="text-slate-800">Position :</strong> <span x-text="d?.position"></span></p>
-                        <p><strong class="text-slate-800">Date/Time :</strong> <span x-text="d?.datetime"></span></p>
-                        <p><strong class="text-slate-800">Area :</strong> <span x-text="d?.branch"></span></p>
-                        <p><strong class="text-slate-800">Distance :</strong> <span x-text="d?.distance"></span></p>
+                        <p><strong class="text-slate-800">ID :</strong> <span x-text="d ? d.emp_id : ''"></span></p>
+                        <p><strong class="text-slate-800">Department :</strong> <span x-text="d ? d.department : ''"></span></p>
+                        <p><strong class="text-slate-800">Position :</strong> <span x-text="d ? d.position : ''"></span></p>
+                        <p><strong class="text-slate-800">Date/Time :</strong> <span x-text="d ? d.datetime : ''"></span></p>
+                        <p><strong class="text-slate-800">Area :</strong> <span x-text="d ? d.branch : ''"></span></p>
+                        <p><strong class="text-slate-800">Distance :</strong> <span x-text="d ? d.distance : ''"></span></p>
                         <p>
                             <strong class="text-slate-800">Location :</strong>
-                            <template x-if="d?.location">
+                            <template x-if="d && d.location">
                                 <a :href="d.location" target="_blank" class="text-blue-600 hover:text-blue-800 underline">Open Map</a>
                             </template>
-                            <template x-if="!d?.location">
+                            <template x-if="!d || !d.location">
                                 <span>N/A</span>
                             </template>
                         </p>
 
                         <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100">
-                             <p><strong class="text-slate-800">Late:</strong> <span x-text="d?.late"></span> min</p>
-                             <p><strong class="text-slate-800">Early Leave:</strong> <span x-text="d?.early"></span> min</p>
-                             <p><strong class="text-slate-800">Work:</strong> <span x-text="d?.hours"></span> hrs</p>
-                             <p><strong class="text-slate-800">OT:</strong> <span x-text="d?.overtime"></span> hrs</p>
+                             <p><strong class="text-slate-800">Late:</strong> <span x-text="d ? d.late : ''"></span> min</p>
+                             <p><strong class="text-slate-800">Early Leave:</strong> <span x-text="d ? d.early : ''"></span> min</p>
+                             <p><strong class="text-slate-800">Work:</strong> <span x-text="d ? d.hours : ''"></span> hrs</p>
+                             <p><strong class="text-slate-800">OT:</strong> <span x-text="d ? d.overtime : ''"></span> hrs</p>
                         </div>
-                        <p class="pt-2 border-t border-slate-100"><strong class="text-slate-800">GPS Status:</strong> <span x-text="d?.gps" :class="d?.gps === 'Flagged' ? 'text-red-500 font-medium' : ''"></span> &nbsp;|&nbsp; <strong class="text-slate-800">Distance:</strong> <span x-text="d?.distance"></span></p>
+                        <p class="pt-2 border-t border-slate-100"><strong class="text-slate-800">GPS Status:</strong> <span x-text="d ? d.gps : ''" :class="d && d.gps === 'Flagged' ? 'text-red-500 font-medium' : ''"></span> &nbsp;|&nbsp; <strong class="text-slate-800">Distance:</strong> <span x-text="d ? d.distance : ''"></span></p>
                         
                         <div class="mt-4 border rounded-lg border-slate-200 overflow-hidden">
                             <ul class="divide-y divide-slate-100 bg-slate-50">
-                                <template x-if="d?.scans">
+                                <template x-if="d && d.scans">
                                     <template x-for="(value, key) in d.scans" :key="key">
                                         <li class="px-4 py-2 flex justify-between">
                                             <span class="text-slate-500" x-text="key"></span>

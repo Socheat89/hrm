@@ -84,10 +84,10 @@
                     <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
                         <th class="py-3 px-4">Employee</th>
                         <th class="py-3 px-4">Branch</th>
-                        <th class="py-3 px-4">Morning In</th>
-                        <th class="py-3 px-4">Lunch Out</th>
-                        <th class="py-3 px-4">Lunch In</th>
-                        <th class="py-3 px-4">Evening Out</th>
+                        <th class="py-3 px-4">Check-In 1</th>
+                        <th class="py-3 px-4">Check-Out 1</th>
+                        <th class="py-3 px-4">Check-In 2</th>
+                        <th class="py-3 px-4">Check-Out 2</th>
                         <th class="py-3 px-4">Status</th>
                         <th class="py-3 px-4">Hours</th>
                         <th class="py-3 px-4">OT</th>
@@ -124,7 +124,7 @@
                             'gps'=>$session->has_fake_gps_flag?'Flagged':'Verified',
                             'distance'=>$mLog?->distance_from_branch?round($mLog->distance_from_branch).'m':'-',
                             'location'=>$locationLink,
-                            'scans'=>['Morning In'=>$mIn?:'-','Lunch Out'=>$lOut?:'-','Lunch In'=>$lIn?:'-','Evening Out'=>$eOut?:'-'],
+                            'scans'=>['Check-In 1'=>$mIn?:'-','Check-Out 1'=>$lOut?:'-','Check-In 2'=>$lIn?:'-','Check-Out 2'=>$eOut?:'-'],
                         ];
                     @endphp
                     <tr class="hover:bg-slate-50 transition-colors">

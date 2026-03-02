@@ -18,6 +18,7 @@ class AttendanceService
 {
     private const DEFAULT_FLOW = ['morning_in', 'lunch_out', 'lunch_in', 'evening_out'];
     private const TWO_SCAN_FLOW = ['morning_in', 'evening_out'];
+    private const CHECK_IN_TYPES = ['morning_in', 'lunch_in'];
 
     /** Scan type display labels */
     public const LABELS = [
@@ -222,6 +223,10 @@ class AttendanceService
         $maxLate = 0;
 
         foreach ($flow as $index => $scanType) {
+            if (! in_array($scanType, self::CHECK_IN_TYPES, true)) {
+                continue;
+            }
+
             if (! $logs->has($scanType) || ! $scheduleTimes[$scanType]) {
                 continue;
             }

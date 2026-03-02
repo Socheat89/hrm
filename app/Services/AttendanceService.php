@@ -171,23 +171,8 @@ class AttendanceService
         $workMinutes       = 0;
         $overtimeMinutes   = 0;
 
-        if ($schedule && $logs->has('morning_in') && $schedule->morning_in) {
-            $startIn = Carbon::parse($dateOnly . ' ' . $schedule->morning_in);
-
-            $endIn = null;
-            if ($schedule->lunch_out) {
-                $endIn = Carbon::parse($dateOnly . ' ' . $schedule->lunch_out);
-            } elseif ($schedule->evening_out) {
-                $endIn = Carbon::parse($dateOnly . ' ' . $schedule->evening_out);
-            }
-
-            $actualIn = Carbon::parse($logs->get('morning_in')->scanned_at);
-
-            if ($actualIn->gt($startIn) && (! $endIn || $actualIn->lte($endIn))) {
-                $lateMinutes = max(0, (int) $startIn->diffInMinutes($actualIn));
-            } else {
-                $lateMinutes = 0;
-            }
+        if ($schedule && $logs->isNotEmpty()) {
+            $lateMinutes = $this->calculateLateMinutesByRule($logs, $schedule, $dateOnly);
         }
 
         if ($logs->has('morning_in') && $logs->has('evening_out')) {
@@ -221,6 +206,45 @@ class AttendanceService
             'work_minutes'        => $workMinutes,
             'overtime_minutes'    => $overtimeMinutes,
         ]);
+    }
+
+    private function calculateLateMinutesByRule($logs, Schedule $schedule, string $dateOnly): int
+    {
+        $flow = $this->resolveFlowFromSchedule($schedule);
+
+        $scheduleTimes = [
+            'morning_in'  => $schedule->morning_in,
+            'lunch_out'   => $schedule->lunch_out,
+            'lunch_in'    => $schedule->lunch_in,
+            'evening_out' => $schedule->evening_out,
+        ];
+
+        $maxLate = 0;
+
+        foreach ($flow as $index => $scanType) {
+            if (! $logs->has($scanType) || ! $scheduleTimes[$scanType]) {
+                continue;
+            }
+
+            $start = Carbon::parse($dateOnly . ' ' . $scheduleTimes[$scanType]);
+
+            $end = Carbon::parse($dateOnly)->endOfDay();
+            for ($next = $index + 1; $next < count($flow); $next++) {
+                $nextType = $flow[$next];
+                if (! empty($scheduleTimes[$nextType])) {
+                    $end = Carbon::parse($dateOnly . ' ' . $scheduleTimes[$nextType]);
+                    break;
+                }
+            }
+
+            $actual = Carbon::parse($logs->get($scanType)->scanned_at);
+
+            if ($actual->gt($start) && $actual->lte($end)) {
+                $maxLate = max($maxLate, (int) $start->diffInMinutes($actual));
+            }
+        }
+
+        return $maxLate;
     }
 
     /**

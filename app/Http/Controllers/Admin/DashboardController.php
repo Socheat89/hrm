@@ -41,6 +41,19 @@ class DashboardController extends Controller
                 ->orderBy('date')
                 ->get();
 
+            $firstDayOfMonth = $today->copy()->startOfMonth();
+            $lastDayForChart = $today->copy();
+            $totalsByDate = $chartRows->pluck('total', 'date');
+
+            $chartLabels = collect();
+            $chartValues = collect();
+
+            for ($date = $firstDayOfMonth->copy(); $date->lte($lastDayForChart); $date->addDay()) {
+                $ymd = $date->format('Y-m-d');
+                $chartLabels->push($date->format('d M'));
+                $chartValues->push((int) ($totalsByDate[$ymd] ?? 0));
+            }
+
             return [
                 'totalEmployees' => Employee::query()->count(),
                 'todayAttendance' => AttendanceSession::query()->whereDate('attendance_date', $today->toDateString())->count(),
@@ -54,8 +67,9 @@ class DashboardController extends Controller
                     ->whereMonth('period_start', $today->month)
                     ->whereYear('period_start', $today->year)
                     ->sum('net_salary'),
-                'chartLabels' => $chartRows->pluck('date')->map(fn ($date) => Carbon::parse($date)->format('d M')),
-                'chartValues' => $chartRows->pluck('total'),
+                'chartLabels' => $chartLabels,
+                'chartValues' => $chartValues,
+                'hasMonthlyAttendanceData' => $chartValues->sum() > 0,
                 'lateEmployees' => $lateEmployees,
                 'pendingLeaves' => $pendingLeaves,
             ];

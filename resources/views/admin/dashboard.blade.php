@@ -37,6 +37,9 @@
                 <div class="relative h-72 w-full">
                     <canvas id="attendanceChart"></canvas>
                 </div>
+                @unless($hasMonthlyAttendanceData)
+                    <p class="mt-3 text-sm text-slate-500">No attendance records yet for this month.</p>
+                @endunless
             </div>
         </div>
         
@@ -111,7 +114,9 @@
 
     <script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
     <script>
-    new Chart(document.getElementById('attendanceChart'), {
+    const attendanceChartElement = document.getElementById('attendanceChart');
+    if (attendanceChartElement) {
+        new Chart(attendanceChartElement, {
         type: 'bar',
         data: {
             labels: @json($chartLabels),
@@ -122,7 +127,12 @@
                 borderRadius: 6,
             }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
     });
+    }
     </script>
 </x-layouts.admin>

@@ -18,7 +18,7 @@ class AttendanceController extends Controller
         $tab     = $request->input('tab', 'all'); // all | late | rejected
 
         $attendanceSessions = AttendanceSession::query()
-            ->with(['employee.user', 'employee.branch', 'logs'])
+            ->with(['employee.user', 'employee.branch', 'employee.department', 'logs'])
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
             ->when($request->filled('employee_id'), fn ($q) => $q->where('employee_id', $request->integer('employee_id')))
             ->when($tab === 'late', fn ($q) => $q->where('late_minutes', '>', 0))

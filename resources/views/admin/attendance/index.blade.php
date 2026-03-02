@@ -102,17 +102,28 @@
                         $lIn  = optional($session->logs->firstWhere('scan_type','lunch_in'))->scanned_at?->format('H:i');
                         $eOut = optional($session->logs->firstWhere('scan_type','evening_out'))->scanned_at?->format('H:i');
                         $mLog = $session->logs->firstWhere('scan_type','morning_in');
+                        $statusText = $session->late_minutes > 0
+                            ? '🔴 Late (' . $session->late_minutes . ' នាទី)'
+                            : '🔵 Good';
+                        $locationLink = ($mLog?->latitude !== null && $mLog?->longitude !== null)
+                            ? 'https://maps.google.com/?q=' . number_format((float) $mLog->latitude, 6, '.', '') . ',' . number_format((float) $mLog->longitude, 6, '.', '')
+                            : null;
                         $detailMap[$session->id]=[
                             'employee'=>$session->employee->user->name,
                             'emp_id'=>$session->employee->employee_id,
+                            'department'=>$session->employee->department?->name ?? 'N/A',
+                            'position'=>$session->employee->position ?? 'N/A',
                             'branch'=>$session->employee->branch?->name??'-',
+                            'status'=>$statusText,
                             'date'=>$session->attendance_date->toDateString(),
+                            'datetime'=>($mLog?->scanned_at?->format('Y-m-d H:i:s')) ?? ($session->attendance_date->toDateString() . ' --:--:--'),
                             'late'=>$session->late_minutes,
                             'early'=>$session->early_leave_minutes,
                             'hours'=>round($session->work_minutes/60,2),
                             'overtime'=>round($session->overtime_minutes/60,2),
                             'gps'=>$session->has_fake_gps_flag?'Flagged':'Verified',
                             'distance'=>$mLog?->distance_from_branch?round($mLog->distance_from_branch).'m':'-',
+                            'location'=>$locationLink,
                             'scans'=>['Morning In'=>$mIn?:'-','Lunch Out'=>$lOut?:'-','Lunch In'=>$lIn?:'-','Evening Out'=>$eOut?:'-'],
                         ];
                     @endphp
@@ -132,9 +143,9 @@
                         <td class="py-3 px-4 text-sm text-slate-600">{{ $eOut??'—' }}</td>
                         <td class="py-3 px-4">
                             @if($session->late_minutes>0)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">{{ $session->late_minutes }} min late</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">🔴 Late ({{ $session->late_minutes }} នាទី)</span>
                             @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">On time</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">🔵 Good</span>
                             @endif
                         </td>
                         <td class="py-3 px-4 text-sm text-slate-600">{{ number_format($session->work_minutes/60,2) }}h</td>
@@ -267,9 +278,25 @@
                     </div>
                     
                     <div x-show="d" class="space-y-3 text-sm text-slate-600">
-                        <p><strong class="text-slate-800">Employee:</strong> <span x-text="d?.employee"></span> (<span x-text="d?.emp_id"></span>)</p>
-                        <p><strong class="text-slate-800">Branch:</strong> <span x-text="d?.branch"></span></p>
-                        <p><strong class="text-slate-800">Date:</strong> <span x-text="d?.date"></span></p>
+                        <p><strong class="text-slate-800">Name :</strong> <span x-text="d?.employee"></span></p>
+                        <p><strong class="text-slate-800">Status :</strong> <span x-text="d?.status"></span></p>
+                        <p class="text-slate-300">-------------------------------------</p>
+                        <p><strong class="text-slate-800">ID :</strong> <span x-text="d?.emp_id"></span></p>
+                        <p><strong class="text-slate-800">Department :</strong> <span x-text="d?.department"></span></p>
+                        <p><strong class="text-slate-800">Position :</strong> <span x-text="d?.position"></span></p>
+                        <p><strong class="text-slate-800">Date/Time :</strong> <span x-text="d?.datetime"></span></p>
+                        <p><strong class="text-slate-800">Area :</strong> <span x-text="d?.branch"></span></p>
+                        <p><strong class="text-slate-800">Distance :</strong> <span x-text="d?.distance"></span></p>
+                        <p>
+                            <strong class="text-slate-800">Location :</strong>
+                            <template x-if="d?.location">
+                                <a :href="d.location" target="_blank" class="text-blue-600 hover:text-blue-800 underline">Open Map</a>
+                            </template>
+                            <template x-if="!d?.location">
+                                <span>N/A</span>
+                            </template>
+                        </p>
+
                         <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100">
                              <p><strong class="text-slate-800">Late:</strong> <span x-text="d?.late"></span> min</p>
                              <p><strong class="text-slate-800">Early Leave:</strong> <span x-text="d?.early"></span> min</p>

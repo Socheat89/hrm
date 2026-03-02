@@ -137,6 +137,14 @@
                         <div class="text-xs text-slate-500">{{ auth()->user()->roles->first()->name ?? 'User' }}</div>
                     </div>
 
+                    <a href="{{ route('profile.edit') }}" class="hidden sm:inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Edit Profile
+                    </a>
+
+                    <a href="{{ route('profile.edit') }}#password-section" class="hidden sm:inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Change Password
+                    </a>
+
                     <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
                         @csrf
                         <button type="submit" class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">

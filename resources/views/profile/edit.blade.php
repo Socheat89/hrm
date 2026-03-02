@@ -8,7 +8,7 @@
         }
     </style>
 
-    <section class="card-soft p-4 mb-4">
+    <section id="profile-section" class="card-soft p-4 mb-4">
         <h3 class="section-title">Profile Information</h3>
         <form method="POST" action="{{ route('profile.update') }}" class="row g-3">
             @csrf
@@ -31,7 +31,7 @@
         </form>
     </section>
 
-    <section class="card-soft p-4 mb-4">
+    <section id="password-section" class="card-soft p-4 mb-4">
         <h3 class="section-title">Update Password</h3>
         <form method="POST" action="{{ route('password.update') }}" class="row g-3">
             @csrf
@@ -71,7 +71,7 @@
 </x-layouts.employee>
 @else
 <x-layouts.admin>
-    <div class="card card-soft p-3 mb-3">
+    <div id="profile-section" class="card card-soft p-3 mb-3">
         <h5 class="mb-3">Profile</h5>
         <form method="POST" action="{{ route('profile.update') }}" class="row g-3">
             @csrf
@@ -83,7 +83,7 @@
         </form>
     </div>
 
-    <div class="card card-soft p-3 mb-3">
+    <div id="password-section" class="card card-soft p-3 mb-3">
         <h6 class="mb-3">Update Password</h6>
         <form method="POST" action="{{ route('password.update') }}" class="row g-3">
             @csrf

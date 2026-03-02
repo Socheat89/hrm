@@ -11,6 +11,7 @@ use App\Models\LeaveRequest;
 use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AttendanceService
@@ -142,7 +143,14 @@ class AttendanceService
             $this->recalculateSession($session->fresh(['logs', 'branch']));
 
             DB::afterCommit(function () use ($log): void {
-                $this->telegramAttendanceNotifier->sendScan($log);
+                try {
+                    $this->telegramAttendanceNotifier->sendScan($log);
+                } catch (\Throwable $exception) {
+                    Log::warning('Attendance scan saved but Telegram callback failed.', [
+                        'attendance_log_id' => $log->id,
+                        'error' => $exception->getMessage(),
+                    ]);
+                }
             });
 
             return $log;

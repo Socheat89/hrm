@@ -8,6 +8,7 @@ use App\Models\AttendanceSession;
 use App\Models\LeaveRequest;
 use App\Services\AttendanceService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -156,10 +157,24 @@ class AttendanceController extends Controller
                 'type'    => 'error',
                 'message' => collect($exception->errors())->flatten()->first() ?? 'Attendance rejected.',
             ]);
+        } catch (QueryException $exception) {
+            Log::error('Attendance scan database error.', [
+                'employee_id' => $employee?->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return back()->withErrors(['scan' => 'System update required. Please run migration on server (php artisan migrate --force).'])
+                ->withInput()
+                ->with('scan_result', [
+                    'type' => 'error',
+                    'message' => 'System update required. Please run migration on server (php artisan migrate --force).',
+                ]);
         } catch (\Throwable $exception) {
             Log::error('Unexpected attendance scan error.', [
                 'employee_id' => $employee?->id,
                 'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
             ]);
 
             return back()->withErrors(['scan' => 'Unable to process scan right now. Please try again.'])

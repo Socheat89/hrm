@@ -163,10 +163,22 @@ class AttendanceService
         $overtimeMinutes   = 0;
 
         if ($schedule && $logs->has('morning_in') && $schedule->morning_in) {
-            $expectedIn  = Carbon::parse($session->attendance_date . ' ' . $schedule->morning_in)
-                ->addMinutes((int) $schedule->late_grace_minutes);
-            $actualIn    = Carbon::parse($logs->get('morning_in')->scanned_at);
-            $lateMinutes = max(0, (int) $expectedIn->diffInMinutes($actualIn, false));
+            $startIn = Carbon::parse($session->attendance_date . ' ' . $schedule->morning_in);
+
+            $endIn = null;
+            if ($schedule->lunch_out) {
+                $endIn = Carbon::parse($session->attendance_date . ' ' . $schedule->lunch_out);
+            } elseif ($schedule->evening_out) {
+                $endIn = Carbon::parse($session->attendance_date . ' ' . $schedule->evening_out);
+            }
+
+            $actualIn = Carbon::parse($logs->get('morning_in')->scanned_at);
+
+            if ($actualIn->gt($startIn) && (! $endIn || $actualIn->lte($endIn))) {
+                $lateMinutes = max(0, (int) $startIn->diffInMinutes($actualIn));
+            } else {
+                $lateMinutes = 0;
+            }
         }
 
         if ($logs->has('morning_in') && $logs->has('evening_out')) {
@@ -327,21 +339,11 @@ class AttendanceService
     private function validateTimeWindow(string $scanType, Schedule $schedule, Carbon $today, Carbon $now): void
     {
         if (! $schedule->{$scanType}) {
-            return; // No schedule time set for this type → always open
+            return;
         }
 
-        [$start, $end] = $this->buildWindow($scanType, $schedule, $today);
-
-        if ($start && $end && ($now->lt($start) || $now->gt($end))) {
-            throw ValidationException::withMessages([
-                'time' => sprintf(
-                    'Scan window for %s is closed (valid %s – %s).',
-                    self::LABELS[$scanType] ?? $scanType,
-                    $start->format('H:i'),
-                    $end->format('H:i')
-                ),
-            ]);
-        }
+        // Window is now informational only. We do not reject outside the range.
+        // Late minutes are calculated in recalculateSession() using schedule bounds.
     }
 
     private function buildWindow(string $scanType, Schedule $schedule, Carbon $today): array

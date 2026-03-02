@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Log;
 class TelegramAttendanceNotifier
 {
     private const CHECK_IN_TYPES = ['morning_in', 'lunch_in'];
-    private const FULL_FLOW = ['morning_in', 'lunch_out', 'lunch_in', 'evening_out'];
-    private const TWO_FLOW = ['morning_in', 'evening_out'];
 
     public function sendScan(AttendanceLog $log): void
     {
@@ -113,32 +111,15 @@ class TelegramAttendanceNotifier
             return false;
         }
 
-        $scheduleTimes = [
-            'morning_in'  => $schedule->morning_in,
-            'lunch_out'   => $schedule->lunch_out,
-            'lunch_in'    => $schedule->lunch_in,
-            'evening_out' => $schedule->evening_out,
-        ];
-
-        if (empty($scheduleTimes[$log->scan_type])) {
+        if (empty($schedule->morning_in)) {
             return false;
         }
 
-        $flow = (! $schedule->lunch_out && ! $schedule->lunch_in) ? self::TWO_FLOW : self::FULL_FLOW;
-        $start = Carbon::parse($dateOnly . ' ' . $scheduleTimes[$log->scan_type]);
+        $start = Carbon::parse($dateOnly . ' ' . $schedule->morning_in);
+        $end = ! empty($schedule->evening_out)
+            ? Carbon::parse($dateOnly . ' ' . $schedule->evening_out)
+            : Carbon::parse($dateOnly)->endOfDay();
 
-        $end = Carbon::parse($dateOnly)->endOfDay();
-        $currentIndex = array_search($log->scan_type, $flow, true);
-        if ($currentIndex !== false) {
-            for ($next = $currentIndex + 1; $next < count($flow); $next++) {
-                $nextType = $flow[$next];
-                if (! empty($scheduleTimes[$nextType])) {
-                    $end = Carbon::parse($dateOnly . ' ' . $scheduleTimes[$nextType]);
-                    break;
-                }
-            }
-        }
-
-        return $scanDate->gt($start) && $scanDate->lte($end);
+        return $scanDate->gt($start) && $scanDate->lt($end);
     }
 }

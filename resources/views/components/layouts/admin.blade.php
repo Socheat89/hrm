@@ -49,15 +49,37 @@
                     Employees
                 </a>
 
-                <a href="{{ route('admin.attendance.index') }}" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
-                    <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.attendance.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    Attendance
-                </a>
+                <div x-data="{ open: {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') || request()->routeIs('admin.schedules.*') ? 'true' : 'false' }} }" class="space-y-1 relative">
+                    <button @click="open = !open" type="button" class="w-full group flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') || request()->routeIs('admin.schedules.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
+                        <div class="flex items-center">
+                            <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') || request()->routeIs('admin.schedules.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Attendance
+                        </div>
+                        <svg :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 transition-transform duration-200 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
 
-                <a href="{{ route('admin.attendance-qr.index') }}" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance-qr.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
-                    <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.attendance-qr.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
-                    QR Generator
-                </a>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="space-y-1 pl-10 pr-2 pt-1"
+                         style="display: none;">
+                        <a href="{{ route('admin.attendance.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                            Attendance Logs
+                        </a>
+
+                        <a href="{{ route('admin.schedules.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.schedules.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                            Work Time & Late Rule
+                        </a>
+
+                        <a href="{{ route('admin.attendance-qr.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance-qr.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                            QR Generator
+                        </a>
+                    </div>
+                </div>
 
                 <div x-data="{ open: {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') || request()->routeIs('admin.overtime-requests.*') || request()->routeIs('admin.change-dayoff-requests.*') ? 'true' : 'false' }} }" class="space-y-1 relative">
                     <button @click="open = !open" type="button" class="w-full group flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') || request()->routeIs('admin.overtime-requests.*') || request()->routeIs('admin.change-dayoff-requests.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">

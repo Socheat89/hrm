@@ -1,8 +1,8 @@
 <x-layouts.admin>
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Edit Schedule — {{ $dayNames[$schedule->day_of_week] ?? '' }}</h2>
-            <p class="text-sm text-slate-500 mt-1">Modify working hours and grace periods</p>
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Edit Attendance Time Setting — {{ $dayNames[$schedule->day_of_week] ?? '' }}</h2>
+            <p class="text-sm text-slate-500 mt-1">Modify check-in/out time and late scan threshold</p>
         </div>
         <a href="{{ route('admin.schedules.index', ['branch_id' => $schedule->branch_id]) }}" class="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors flex items-center">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -66,6 +66,7 @@
                                 <span class="text-slate-500 sm:text-sm">minutes</span>
                             </div>
                         </div>
+                        <p class="mt-1 text-xs text-slate-500">Late is counted after: Morning In + Late Grace minutes.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Early Leave Grace</label>

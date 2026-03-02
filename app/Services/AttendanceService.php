@@ -31,7 +31,10 @@ class AttendanceService
         'evening_out' => ['morning_in'],
     ];
 
-    public function __construct(private readonly GeoFenceService $geoFenceService)
+    public function __construct(
+        private readonly GeoFenceService $geoFenceService,
+        private readonly TelegramAttendanceNotifier $telegramAttendanceNotifier
+    )
     {
     }
 
@@ -126,6 +129,10 @@ class AttendanceService
 
             // 8. Recalculate session totals
             $this->recalculateSession($session->fresh(['logs', 'branch']));
+
+            DB::afterCommit(function () use ($log): void {
+                $this->telegramAttendanceNotifier->sendScan($log);
+            });
 
             return $log;
         });

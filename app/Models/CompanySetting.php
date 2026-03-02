@@ -16,6 +16,9 @@ class CompanySetting extends Model
         'currency',
         'current_plan_name',
         'payroll_enabled',
+        'telegram_scan_enabled',
+        'telegram_bot_token',
+        'telegram_chat_id',
         'overtime_rate_per_hour',
         'late_deduction_per_minute',
         'allowed_late_count',
@@ -26,6 +29,7 @@ class CompanySetting extends Model
     {
         return [
             'payroll_enabled' => 'boolean',
+            'telegram_scan_enabled' => 'boolean',
             'overtime_rate_per_hour' => 'decimal:2',
             'late_deduction_per_minute' => 'decimal:4',
             'allowed_late_count' => 'integer',

@@ -18,6 +18,9 @@ class SettingController extends Controller
             'currency' => 'USD',
             'current_plan_name' => 'Standard',
             'payroll_enabled' => true,
+            'telegram_scan_enabled' => false,
+            'telegram_bot_token' => '8544896901:AAFM6SoCr_g5SoIOJIR7l6ukHQsXbTelqA8',
+            'telegram_chat_id' => null,
             'overtime_rate_per_hour' => 0,
             'late_deduction_per_minute' => 0,
             'allowed_late_count' => 0,
@@ -36,6 +39,9 @@ class SettingController extends Controller
             'currency' => 'USD',
             'current_plan_name' => 'Standard',
             'payroll_enabled' => true,
+            'telegram_scan_enabled' => false,
+            'telegram_bot_token' => '8544896901:AAFM6SoCr_g5SoIOJIR7l6ukHQsXbTelqA8',
+            'telegram_chat_id' => null,
             'overtime_rate_per_hour' => 0,
             'late_deduction_per_minute' => 0,
             'allowed_late_count' => 0,
@@ -45,6 +51,7 @@ class SettingController extends Controller
         $setting->update([
             ...$request->validated(),
             'payroll_enabled' => $request->boolean('payroll_enabled'),
+            'telegram_scan_enabled' => $request->boolean('telegram_scan_enabled'),
         ]);
 
         Cache::forget('ui_company_setting');

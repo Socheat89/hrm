@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class CompanySetting extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'company_name',
+        'primary_color',
+        'timezone',
+        'currency',
+        'current_plan_name',
+        'payroll_enabled',
+        'overtime_rate_per_hour',
+        'late_deduction_per_minute',
+        'allowed_late_count',
+        'late_deduction_amount',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'payroll_enabled' => 'boolean',
+            'overtime_rate_per_hour' => 'decimal:2',
+            'late_deduction_per_minute' => 'decimal:4',
+            'allowed_late_count' => 'integer',
+            'late_deduction_amount' => 'decimal:2',
+        ];
+    }
+}

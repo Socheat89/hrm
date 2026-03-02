@@ -124,6 +124,26 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                        <div class="md:col-span-12">
+                            <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-lg p-3 w-full">
+                                <input type="hidden" name="telegram_scan_enabled" value="0">
+                                <input type="checkbox" id="telegram_scan_enabled" name="telegram_scan_enabled" value="1" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-5 h-5 transition-colors cursor-pointer" @checked(old('telegram_scan_enabled', $setting->telegram_scan_enabled))>
+                                <label for="telegram_scan_enabled" class="text-sm font-medium text-slate-700 mb-0 cursor-pointer select-none">Send attendance scan to Telegram group</label>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-6">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Telegram Bot Token</label>
+                            <input type="text" name="telegram_bot_token" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('telegram_bot_token', $setting->telegram_bot_token) }}" placeholder="e.g. 123456789:ABCDEF...">
+                        </div>
+
+                        <div class="md:col-span-6">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Telegram Chat ID / Group ID</label>
+                            <input type="text" name="telegram_chat_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" value="{{ old('telegram_chat_id', $setting->telegram_chat_id) }}" placeholder="e.g. -1001234567890">
+                        </div>
+                    </div>
                 </div>
             </div>
 

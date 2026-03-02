@@ -160,6 +160,7 @@ class AttendanceService
     public function recalculateSession(AttendanceSession $session): void
     {
         $logs     = $session->logs->keyBy('scan_type');
+        $dateOnly = Carbon::parse($session->attendance_date)->toDateString();
         $schedule = Schedule::query()
             ->where('branch_id', $session->branch_id)
             ->where('day_of_week', (int) Carbon::parse($session->attendance_date)->dayOfWeek)
@@ -171,13 +172,13 @@ class AttendanceService
         $overtimeMinutes   = 0;
 
         if ($schedule && $logs->has('morning_in') && $schedule->morning_in) {
-            $startIn = Carbon::parse($session->attendance_date . ' ' . $schedule->morning_in);
+            $startIn = Carbon::parse($dateOnly . ' ' . $schedule->morning_in);
 
             $endIn = null;
             if ($schedule->lunch_out) {
-                $endIn = Carbon::parse($session->attendance_date . ' ' . $schedule->lunch_out);
+                $endIn = Carbon::parse($dateOnly . ' ' . $schedule->lunch_out);
             } elseif ($schedule->evening_out) {
-                $endIn = Carbon::parse($session->attendance_date . ' ' . $schedule->evening_out);
+                $endIn = Carbon::parse($dateOnly . ' ' . $schedule->evening_out);
             }
 
             $actualIn = Carbon::parse($logs->get('morning_in')->scanned_at);
@@ -202,14 +203,14 @@ class AttendanceService
         }
 
         if ($schedule && $logs->has('evening_out') && $schedule->evening_out) {
-            $expectedOut       = Carbon::parse($session->attendance_date . ' ' . $schedule->evening_out)
+            $expectedOut       = Carbon::parse($dateOnly . ' ' . $schedule->evening_out)
                 ->subMinutes((int) $schedule->early_leave_grace_minutes);
             $actualOut         = Carbon::parse($logs->get('evening_out')->scanned_at);
             $earlyLeaveMinutes = max(0, (int) $actualOut->diffInMinutes($expectedOut, false) * -1);
 
             if ($schedule->morning_in) {
-                $scheduledMinutes = Carbon::parse($session->attendance_date . ' ' . $schedule->morning_in)
-                    ->diffInMinutes(Carbon::parse($session->attendance_date . ' ' . $schedule->evening_out));
+                $scheduledMinutes = Carbon::parse($dateOnly . ' ' . $schedule->morning_in)
+                    ->diffInMinutes(Carbon::parse($dateOnly . ' ' . $schedule->evening_out));
                 $overtimeMinutes = max(0, $workMinutes - $scheduledMinutes);
             }
         }

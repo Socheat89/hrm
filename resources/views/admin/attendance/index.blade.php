@@ -87,7 +87,6 @@
                         <th class="py-3 px-4">Date/Time</th>
                         <th class="py-3 px-4">Status</th>
                         <th class="py-3 px-4">Distance</th>
-                        <th class="py-3 px-4 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -111,24 +110,6 @@
                             ? 'https://maps.google.com/?q=' . number_format((float) $log->latitude, 6, '.', '') . ',' . number_format((float) $log->longitude, 6, '.', '')
                             : null;
 
-                        $detail = [
-                            'employee'=>$log->employee->user->name,
-                            'emp_id'=>$log->employee->employee_id,
-                            'department'=>$log->employee->department?->name ?? 'N/A',
-                            'position'=>$log->employee->position ?? 'N/A',
-                            'branch'=>$log->employee->branch?->name??'-',
-                            'status'=>$statusText,
-                            'date'=>$scanAt->toDateString(),
-                            'datetime'=>$scanAt->format('Y-m-d H:i:s'),
-                            'late'=>$isLate ? 1 : 0,
-                            'early'=>0,
-                            'hours'=>0,
-                            'overtime'=>0,
-                            'gps'=>$log->has_fake_gps?'Flagged':'Verified',
-                            'distance'=>$log->distance_from_branch?round($log->distance_from_branch).'m':'-',
-                            'location'=>$locationLink,
-                            'scans'=>['Scan'=>$scanLabel,'Scan Time'=>$scanAt->format('H:i:s')],
-                        ];
                     @endphp
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="py-3 px-4">
@@ -146,17 +127,9 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 text-sm text-slate-600">{{ $log->distance_from_branch ? round($log->distance_from_branch) . ' m' : '—' }}</td>
-                        <td class="py-3 px-4 text-right">
-                            <button type="button" 
-                                x-data="" 
-                                x-on:click='$dispatch("show-detail", @js($detail))' 
-                                class="inline-flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-800">
-                                Detail
-                            </button>
-                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="py-8 text-center text-slate-500">No attendance data for selected filters.</td></tr>
+                    <tr><td colspan="6" class="py-8 text-center text-slate-500">No attendance data for selected filters.</td></tr>
                 @endforelse
                 </tbody>
             </table>
@@ -222,99 +195,4 @@
     </div>
     @endif
 
-    <!-- Detail Modal -->
-    <div x-data="{ 
-            open: false,
-            d: null
-         }" 
-         x-on:show-detail.window="d = $event.detail; open = true"
-         x-show="open" 
-         class="fixed inset-0 z-[100] overflow-y-auto" 
-         style="display: none;"
-         aria-labelledby="modal-title" 
-         role="dialog" 
-         aria-modal="true">
-        
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
-            
-            <div x-show="open" 
-                 x-transition:enter="ease-out duration-300" 
-                 x-transition:enter-start="opacity-0" 
-                 x-transition:enter-end="opacity-100" 
-                 x-transition:leave="ease-in duration-200" 
-                 x-transition:leave-start="opacity-100" 
-                 x-transition:leave-end="opacity-0" 
-                 class="fixed inset-0 bg-slate-900 bg-opacity-50 transition-opacity" 
-                 aria-hidden="true" 
-                 x-on:click="open = false"></div>
-
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
-            <div x-show="open" 
-                 x-transition:enter="ease-out duration-300" 
-                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                 x-transition:leave="ease-in duration-200" 
-                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
-                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-                 class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200 z-[110]">
-                
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
-                        <h3 class="text-lg leading-6 font-semibold text-slate-800" id="modal-title">Attendance Detail</h3>
-                        <button type="button" x-on:click="open = false" class="text-slate-400 hover:text-slate-500 transition-colors">
-                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                        </button>
-                    </div>
-                    
-                    <div x-show="d" class="space-y-3 text-sm text-slate-600">
-                        <p><strong class="text-slate-800">Name :</strong> <span x-text="d ? d.employee : ''"></span></p>
-                        <p><strong class="text-slate-800">Status :</strong> <span x-text="d ? d.status : ''"></span></p>
-                        <p class="text-slate-300">-------------------------------------</p>
-                        <p><strong class="text-slate-800">ID :</strong> <span x-text="d ? d.emp_id : ''"></span></p>
-                        <p><strong class="text-slate-800">Department :</strong> <span x-text="d ? d.department : ''"></span></p>
-                        <p><strong class="text-slate-800">Position :</strong> <span x-text="d ? d.position : ''"></span></p>
-                        <p><strong class="text-slate-800">Date/Time :</strong> <span x-text="d ? d.datetime : ''"></span></p>
-                        <p><strong class="text-slate-800">Area :</strong> <span x-text="d ? d.branch : ''"></span></p>
-                        <p><strong class="text-slate-800">Distance :</strong> <span x-text="d ? d.distance : ''"></span></p>
-                        <p>
-                            <strong class="text-slate-800">Location :</strong>
-                            <template x-if="d && d.location">
-                                <a :href="d.location" target="_blank" class="text-blue-600 hover:text-blue-800 underline">Open Map</a>
-                            </template>
-                            <template x-if="!d || !d.location">
-                                <span>N/A</span>
-                            </template>
-                        </p>
-
-                        <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100">
-                             <p><strong class="text-slate-800">Late:</strong> <span x-text="d ? d.late : ''"></span> min</p>
-                             <p><strong class="text-slate-800">Early Leave:</strong> <span x-text="d ? d.early : ''"></span> min</p>
-                             <p><strong class="text-slate-800">Work:</strong> <span x-text="d ? d.hours : ''"></span> hrs</p>
-                             <p><strong class="text-slate-800">OT:</strong> <span x-text="d ? d.overtime : ''"></span> hrs</p>
-                        </div>
-                        <p class="pt-2 border-t border-slate-100"><strong class="text-slate-800">GPS Status:</strong> <span x-text="d ? d.gps : ''" :class="d && d.gps === 'Flagged' ? 'text-red-500 font-medium' : ''"></span> &nbsp;|&nbsp; <strong class="text-slate-800">Distance:</strong> <span x-text="d ? d.distance : ''"></span></p>
-                        
-                        <div class="mt-4 border rounded-lg border-slate-200 overflow-hidden">
-                            <ul class="divide-y divide-slate-100 bg-slate-50">
-                                <template x-if="d && d.scans">
-                                    <template x-for="(value, key) in d.scans" :key="key">
-                                        <li class="px-4 py-2 flex justify-between">
-                                            <span class="text-slate-500" x-text="key"></span>
-                                            <strong class="text-slate-800" x-text="value"></strong>
-                                        </li>
-                                    </template>
-                                </template>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-slate-200">
-                    <button type="button" x-on:click="open = false" class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 </x-layouts.admin>

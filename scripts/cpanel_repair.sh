@@ -58,6 +58,11 @@ if [ -f public/index.php ]; then
   sed -i "s|__DIR__.'/../bootstrap/app.php'|__DIR__.'/bootstrap/app.php'|g" index.php
 fi
 
+if [ -d public/build ]; then
+  rm -rf build
+  ln -s public/build build 2>/dev/null || cp -R public/build build
+fi
+
 echo "[8/8] Done."
 echo "If your domain can set document root, prefer: <project>/public"
 echo "Then test with: curl -I https://your-domain"

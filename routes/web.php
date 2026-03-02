@@ -74,6 +74,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('schedules', ScheduleController::class)->except(['show']);
 
+        // Employee specific schedule management
+        Route::get('employees/{employee}/schedule', [\App\Http\Controllers\Admin\EmployeeScheduleController::class, 'index'])->name('employees.schedule.index');
+        Route::post('employees/{employee}/schedule', [\App\Http\Controllers\Admin\EmployeeScheduleController::class, 'store'])->name('employees.schedule.store');
+        Route::delete('employees/{employee}/schedule/{schedule}', [\App\Http\Controllers\Admin\EmployeeScheduleController::class, 'destroy'])->name('employees.schedule.destroy');
+
         Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

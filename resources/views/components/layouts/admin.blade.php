@@ -49,10 +49,10 @@
                     Employees
                 </a>
 
-                <details class="space-y-1 relative menu-disclosure" {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') || request()->routeIs('admin.schedules.*') ? 'open' : '' }}>
-                    <summary class="list-none cursor-pointer w-full group flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') || request()->routeIs('admin.schedules.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
+                <details class="space-y-1 relative menu-disclosure" {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'open' : '' }}>
+                    <summary class="list-none cursor-pointer w-full group flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
                         <span class="flex items-center">
-                            <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') || request()->routeIs('admin.schedules.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             Attendance
                         </span>
                         <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -61,10 +61,6 @@
                     <div class="space-y-1 pl-10 pr-2 pt-1">
                         <a href="{{ route('admin.attendance.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
                             Attendance Logs
-                        </a>
-
-                        <a href="{{ route('admin.schedules.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.schedules.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
-                            Work Time & Late Rule
                         </a>
 
                         <a href="{{ route('admin.attendance-qr.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance-qr.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">

@@ -25,21 +25,21 @@ class AttendanceQrController extends Controller
             'branch_id' => ['required', 'exists:branches,id'],
         ]);
 
-        // Deactivate any existing tokens for this branch today
+        // Deactivate ANY previous active tokens for this branch so only one remains valid
         AttendanceQrToken::query()
             ->where('branch_id', $validated['branch_id'])
-            ->whereDate('token_date', today())
+            ->where('is_active', true)
             ->update(['is_active' => false]);
 
         AttendanceQrToken::query()->create([
             'branch_id'  => $validated['branch_id'],
             'token_date' => today(),
             'token'      => (string) \Illuminate\Support\Str::uuid(),
-            'expires_at' => now()->setTime(23, 59, 59),
+            'expires_at' => null, // Never expires
             'is_active'  => true,
         ]);
 
-        return back()->with('status', 'QR code generated successfully. Valid until midnight.');
+        return back()->with('status', 'Static QR code generated successfully. It will not expire.');
     }
 
     public function qr(AttendanceQrToken $token)

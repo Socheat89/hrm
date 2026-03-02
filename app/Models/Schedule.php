@@ -12,6 +12,7 @@ class Schedule extends Model
 
     protected $fillable = [
         'branch_id',
+        'employee_id',
         'day_of_week',
         'morning_in',
         'lunch_out',
@@ -24,5 +25,10 @@ class Schedule extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 }

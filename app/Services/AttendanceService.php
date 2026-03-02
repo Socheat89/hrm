@@ -162,10 +162,8 @@ class AttendanceService
     {
         $logs     = $session->logs->keyBy('scan_type');
         $dateOnly = Carbon::parse($session->attendance_date)->toDateString();
-        $schedule = Schedule::query()
-            ->where('branch_id', $session->branch_id)
-            ->where('day_of_week', (int) Carbon::parse($session->attendance_date)->dayOfWeek)
-            ->first();
+        // Use effective schedule: User-specific or Branch default
+        $schedule = $this->getEffectiveSchedule($session->branch_id, $session->employee_id, (int) Carbon::parse($session->attendance_date)->dayOfWeek);
 
         $lateMinutes       = 0;
         $earlyLeaveMinutes = 0;
@@ -253,6 +251,29 @@ class AttendanceService
     }
 
     /**
+     * Get the effective schedule for an employee (Employee-specific > Branch > default).
+     */
+    private function getEffectiveSchedule(int $branchId, int $employeeId, int $dayOfWeek): ?Schedule
+    {
+        // 1. Check for employee-specific schedule
+        $employeeSchedule = Schedule::query()
+            ->where('employee_id', $employeeId)
+            ->where('day_of_week', $dayOfWeek)
+            ->first();
+
+        if ($employeeSchedule) {
+            return $employeeSchedule;
+        }
+
+        // 2. Fallback to branch global schedule
+        return Schedule::query()
+            ->where('branch_id', $branchId)
+            ->whereNull('employee_id')
+            ->where('day_of_week', $dayOfWeek)
+            ->first();
+    }
+
+    /**
      * Determine the next expected scan type and window status for an employee today.
      * Returns [scan_type, label, status] where status is 'open' or 'completed'.
      */
@@ -265,10 +286,7 @@ class AttendanceService
             ->whereDate('attendance_date', $today)
             ->first();
 
-        $schedule = Schedule::query()
-            ->where('branch_id', $employee->branch_id)
-            ->where('day_of_week', (int) $today->dayOfWeek)
-            ->first();
+        $schedule = $this->getEffectiveSchedule($employee->branch_id, $employee->id, (int) $today->dayOfWeek);
 
         $scanFlow = $this->resolveFlowFromSchedule($schedule);
         $scanned = $session?->logs?->pluck('scan_type')->toArray() ?? [];
@@ -286,12 +304,29 @@ class AttendanceService
     {
         $targetDate = $date ?? Carbon::today();
 
-        $schedule = Schedule::query()
-            ->where('branch_id', $employee->branch_id)
-            ->where('day_of_week', (int) $targetDate->dayOfWeek)
-            ->first();
+        $schedule = $this->getEffectiveSchedule($employee->branch_id, $employee->id, (int) $targetDate->dayOfWeek);
 
         return $this->resolveFlowFromSchedule($schedule);
+    }
+
+    private function getEffectiveSchedule(int $branchId, int $employeeId, int $dayOfWeek): ?Schedule
+    {
+        // 1. Employee-specific schedule
+        $custom = Schedule::query()
+            ->where('employee_id', $employeeId)
+            ->where('day_of_week', $dayOfWeek)
+            ->first();
+
+        if ($custom) {
+            return $custom;
+        }
+
+        // 2. Branch default (where employee_id is null)
+        return Schedule::query()
+            ->where('branch_id', $branchId)
+            ->whereNull('employee_id')
+            ->where('day_of_week', $dayOfWeek)
+            ->first();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -469,7 +504,6 @@ class AttendanceService
         $valid = AttendanceQrToken::query()
             ->where('branch_id', $branch->id)
             ->where('token', $token)
-            ->whereDate('token_date', $today->toDateString())
             ->where('is_active', true)
             ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', $now))
             ->exists();

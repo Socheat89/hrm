@@ -9,6 +9,7 @@ use App\Models\LeaveRequest;
 use App\Services\AttendanceService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AttendanceController extends Controller
@@ -155,6 +156,18 @@ class AttendanceController extends Controller
                 'type'    => 'error',
                 'message' => collect($exception->errors())->flatten()->first() ?? 'Attendance rejected.',
             ]);
+        } catch (\Throwable $exception) {
+            Log::error('Unexpected attendance scan error.', [
+                'employee_id' => $employee?->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return back()->withErrors(['scan' => 'Unable to process scan right now. Please try again.'])
+                ->withInput()
+                ->with('scan_result', [
+                    'type' => 'error',
+                    'message' => 'Unable to process scan right now. Please try again.',
+                ]);
         }
     }
 

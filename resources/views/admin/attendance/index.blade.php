@@ -91,21 +91,30 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                 @forelse($attendanceLogs as $log)
-                    @php
+                        @php
                         $schedule = $scheduleMap[$log->branch_id] ?? null;
                         $scanAt = \Carbon\Carbon::parse($log->scanned_at);
-                        $startAt = $schedule?->morning_in ? \Carbon\Carbon::parse($selectedDate . ' ' . $schedule->morning_in) : null;
-                        $endAt = $schedule?->evening_out ? \Carbon\Carbon::parse($selectedDate . ' ' . $schedule->evening_out) : null;
-                        $isLate = $startAt && $endAt && $scanAt->gt($startAt) && $scanAt->lt($endAt);
+
+                        // Determine scan label (Check-In / Check-Out)
                         $scanLabel = in_array($log->scan_type, ['morning_in', 'lunch_in'], true)
                             ? 'Check-In'
                             : (in_array($log->scan_type, ['lunch_out', 'evening_out'], true) ? 'Check-Out' : '-');
+
+                        // For Check-In scans, determine the scheduled start time for that scan type
+                        $startForScan = null;
+                        if (in_array($log->scan_type, ['morning_in'], true)) {
+                            $startForScan = $schedule?->morning_in ? \Carbon\Carbon::parse($selectedDate . ' ' . $schedule->morning_in) : null;
+                        } elseif (in_array($log->scan_type, ['lunch_in'], true)) {
+                            $startForScan = $schedule?->lunch_in ? \Carbon\Carbon::parse($selectedDate . ' ' . $schedule->lunch_in) : null;
+                        }
+
+                        // Mark late only for Check-In scans (when scan time is after the scheduled start)
+                        $isLate = $startForScan ? $scanAt->gt($startForScan) : false;
 
                         if ($activeTab === 'late' && !$isLate) {
                             continue;
                         }
 
-                        $statusText = $isLate ? '🔴 Late' : '🔵 Good';
                         $locationLink = ($log->latitude !== null && $log->longitude !== null)
                             ? 'https://maps.google.com/?q=' . number_format((float) $log->latitude, 6, '.', '') . ',' . number_format((float) $log->longitude, 6, '.', '')
                             : null;

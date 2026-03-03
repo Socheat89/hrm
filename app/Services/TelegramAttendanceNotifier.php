@@ -102,24 +102,29 @@ class TelegramAttendanceNotifier
         $scanDate = Carbon::parse($log->scanned_at);
         $dateOnly = $scanDate->toDateString();
 
+        // Prefer employee-specific schedule, fallback to branch default (same logic as AttendanceService)
         $schedule = Schedule::query()
-            ->where('branch_id', $log->branch_id)
+            ->where('employee_id', $log->employee_id)
             ->where('day_of_week', (int) $scanDate->dayOfWeek)
-            ->first();
+            ->first()
+            ?? Schedule::query()
+                ->where('branch_id', $log->branch_id)
+                ->whereNull('employee_id')
+                ->where('day_of_week', (int) $scanDate->dayOfWeek)
+                ->first();
 
-        if (! $schedule) {
+        if (! $schedule || empty($schedule->morning_in)) {
             return false;
         }
 
-        if (empty($schedule->morning_in)) {
+        // Only consider check-ins as 'late' (morning_in / lunch_in)
+        if (! in_array($log->scan_type, self::CHECK_IN_TYPES, true)) {
             return false;
         }
 
-        $start = Carbon::parse($dateOnly . ' ' . $schedule->morning_in);
-        $end = ! empty($schedule->evening_out)
-            ? Carbon::parse($dateOnly . ' ' . $schedule->evening_out)
-            : Carbon::parse($dateOnly)->endOfDay();
+        $start = Carbon::parse($dateOnly . ' ' . $schedule->morning_in)
+            ->addMinutes((int) ($schedule->late_grace_minutes ?? 0));
 
-        return $scanDate->gt($start) && $scanDate->lt($end);
+        return $scanDate->gt($start);
     }
 }

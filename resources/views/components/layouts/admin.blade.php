@@ -17,8 +17,21 @@
         .font-sans { font-family: 'Inter', system-ui, sans-serif; }
     </style>
 </head>
-<body class="h-full font-sans antialiased text-slate-600 bg-slate-50" x-data="{ sidebarOpen: false }">
+<body class="h-full font-sans antialiased text-slate-600 bg-slate-50" x-data="{ sidebarOpen: false, pageLoading: true }" x-init="setTimeout(() => pageLoading = false, 2000); window.addEventListener('load', () => pageLoading = false)">
     
+    <!-- Page Loading Overlay -->
+    <div x-show="pageLoading" 
+         style="display: flex;"
+         class="fixed inset-0 z-[60] flex items-center justify-center bg-white transition-opacity duration-500"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p class="mt-4 text-sm text-slate-500 font-medium animate-pulse">Loading...</p>
+        </div>
+    </div>
+
     <!-- Mobile sidebar backdrop -->
     <div x-show="sidebarOpen" class="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm lg:hidden" 
          x-transition:enter="transition-opacity ease-linear duration-300"
@@ -55,12 +68,29 @@
                     Overview
                 </a>
 
+
                 <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">People</div>
 
-                <a href="{{ route('admin.employees.index') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.employees.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
-                    <i class="fa-solid fa-users w-5 h-5 mr-3 {{ request()->routeIs('admin.employees.*') ? 'text-white' : 'text-slate-500 group-hover:text-white' }} transition-colors"></i>
-                    Employees
-                </a>
+                <!-- Employees Group -->
+                <div x-data="{ open: {{ request()->routeIs('admin.employees.*') || request()->routeIs('admin.departments.*') ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" type="button" class="w-full group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.employees.*') || request()->routeIs('admin.departments.*') ? 'text-white bg-white/5' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <span class="flex items-center">
+                            <i class="fa-solid fa-users w-5 h-5 mr-3 {{ request()->routeIs('admin.employees.*') || request()->routeIs('admin.departments.*') ? 'text-blue-400' : 'text-slate-500 group-hover:text-white' }}"></i>
+                            Employees
+                        </span>
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="open ? 'rotate-90 text-slate-300' : 'text-slate-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                    <div x-show="open" x-collapse class="pl-4 space-y-1">
+                        <a href="{{ route('admin.employees.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.employees.*') ? 'text-blue-400 bg-blue-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <span class="w-1.5 h-1.5 rounded-full mr-3 {{ request()->routeIs('admin.employees.*') ? 'bg-blue-400' : 'bg-slate-600' }}"></span>
+                            All Employees
+                        </a>
+                        <a href="{{ route('admin.departments.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.departments.*') ? 'text-blue-400 bg-blue-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <span class="w-1.5 h-1.5 rounded-full mr-3 {{ request()->routeIs('admin.departments.*') ? 'bg-blue-400' : 'bg-slate-600' }}"></span>
+                            Departments
+                        </a>
+                    </div>
+                </div>
 
                 <!-- Attendance Group -->
                 <div x-data="{ open: {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'true' : 'false' }} }" class="space-y-1">
@@ -118,9 +148,9 @@
                 @if(auth()->user()->hasAnyRole(['Super Admin', 'Admin / HR']))
                     <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Administration</div>
                     
-                    <a href="{{ route('admin.branches.index') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.branches.*') || request()->routeIs('admin.departments.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
-                        <i class="fa-solid fa-building w-5 h-5 mr-3 {{ request()->routeIs('admin.branches.*') || request()->routeIs('admin.departments.*') ? 'text-white' : 'text-slate-500 group-hover:text-white' }} transition-colors"></i>
-                        Branches & Depts
+                    <a href="{{ route('admin.branches.index') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.branches.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <i class="fa-solid fa-building w-5 h-5 mr-3 {{ request()->routeIs('admin.branches.*') ? 'text-white' : 'text-slate-500 group-hover:text-white' }} transition-colors"></i>
+                        Branches
                     </a>
 
                     <a href="{{ route('admin.settings.edit') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.settings.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">

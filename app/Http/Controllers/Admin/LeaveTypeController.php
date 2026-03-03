@@ -53,7 +53,14 @@ class LeaveTypeController extends Controller
 
     public function destroy(LeaveType $leaveType)
     {
-        $leaveType->delete();
+        try {
+            $leaveType->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return back()->withErrors(['error' => 'Cannot delete leave type because it is being used in leave requests.']);
+            }
+            throw $e;
+        }
 
         return redirect()->route('admin.leave-types.index')->with('status', 'Leave type deleted.');
     }

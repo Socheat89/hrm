@@ -47,7 +47,18 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
-        $branch->delete();
+        if ($branch->employees()->exists()) {
+            return back()->withErrors(['error' => 'Cannot delete branch because it has employees assigned.']);
+        }
+
+        try {
+            $branch->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return back()->withErrors(['error' => 'Cannot delete branch because it is linked to other records (Attendance, Payroll, etc).']);
+            }
+            throw $e;
+        }
 
         return redirect()->route('admin.branches.index')->with('status', 'Branch deleted.');
     }

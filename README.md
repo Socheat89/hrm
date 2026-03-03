@@ -56,8 +56,19 @@ php artisan serve
 ## Default Accounts
 
 - Super Admin: `superadmin@hrm.local` / ` `
+- SaaS Admin: `saas@hrm.local` / `password123`
 - Admin HR: `hr@hrm.local` / `password123`
 - Employee: `employee@hrm.local` / `password123`
+
+## How to Create a New Plan
+
+1. Log in as **SaaS Admin** (`saas@hrm.local` / `password123`).
+2. Go to the sidebar and click **Subscription Plans**.
+3. Click the **Create Plan** button at the top right.
+4. Fill in the plan details (name, price, employee/branch limits, etc).
+5. Click **Create Plan** to save.
+
+Plans will now be available for companies to subscribe.
 
 ## Shared Hosting (cPanel)
 

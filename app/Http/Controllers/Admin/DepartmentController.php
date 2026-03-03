@@ -58,7 +58,14 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department)
     {
-        $department->delete();
+        try {
+            $department->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return back()->withErrors(['error' => 'Cannot delete department because it is linked to other records.']);
+            }
+            throw $e;
+        }
 
         return redirect()->route('admin.departments.index')->with('status', 'Department deleted.');
     }

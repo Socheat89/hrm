@@ -1,489 +1,338 @@
-﻿<x-layouts.employee page-title="Request" page-description="Request Leave, Overtime (OT), and Change Day Off." :show-page-banner="false">
-    
-    <!-- External Dependencies (Scoped to this page) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<x-layouts.employee page-title="Requests" :back-url="route('employee.dashboard')">
+
     <script src="//unpkg.com/alpinejs" defer></script>
 
     <style>
         [x-cloak] { display: none !important; }
-        
-        .page-container {
-            padding: 1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
 
-        /* Header Card */
-        .header-card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        .header-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 6px; height: 100%;
-            background: var(--brand);
-        }
-        .header-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-        }
-        .header-desc {
-            font-size: 0.875rem;
-            color: #64748b;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-        .date-pill {
-            display: inline-block;
-            background: #e0f2fe;
-            color: #0369a1;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 0.35rem 0.85rem;
-            border-radius: 999px;
-        }
-
-        /* Tabs */
-        .tabs-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tab-btn {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 1rem 0.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        /* Segmented Control */
+        .segmented-control {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            color: #64748b;
+            background: var(--surface);
+            padding: 4px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+            position: relative;
+            border: 1px solid var(--line);
         }
-        .tab-btn i { font-size: 1.25rem; margin-bottom: 2px; }
-        .tab-btn span { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; }
         
-        .tab-btn.active {
-            background: #1e3a8a; /* Dark Blue */
-            color: #fff;
-            border-color: #1e3a8a;
-            box-shadow: 0 8px 16px rgba(30, 58, 138, 0.2);
-            transform: translateY(-2px);
+        .segment-btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+            position: relative;
+            z-index: 2;
         }
-        .tab-btn:hover:not(.active) {
-            background: #f8fafc;
-            border-color: #cbd5e1;
+        
+        .segment-btn.active {
+            background: #fff;
+            color: var(--brand);
+            box-shadow: var(--shadow-sm);
+            font-weight: 700;
         }
 
-        /* Form Card */
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .section-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--ink);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .btn-new {
+            background: var(--brand);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 0.4rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-new:active { transform: scale(0.96); }
+        .btn-cancel {
+            background: var(--surface);
+            color: var(--muted);
+        }
+
+        /* Forms */
         .form-card {
             background: #fff;
-            border-radius: 24px;
+            border-radius: var(--radius-lg);
             padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-            margin-bottom: 30px;
+            border: 1px solid var(--line);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            animation: slideDown 0.3s ease-out;
         }
-        .form-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 1.5rem;
-        }
-        .form-icon {
-            width: 40px; height: 40px;
-            border-radius: 12px;
-            background: #e0f2fe;
-            color: #0284c7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-        }
-        .form-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
-        }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
 
-        .form-group { margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1.25rem; }
         .form-label {
+            display: block;
+            margin-bottom: 0.4rem;
             font-size: 0.85rem;
-            font-weight: 700;
-            color: #334155;
-            margin-bottom: 0.5rem;
-            display: block;
+            font-weight: 600;
+            color: var(--ink);
         }
-        .form-control, .form-select {
-            display: block;
+        
+        .form-input, .form-select, .form-textarea {
             width: 100%;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            padding: 0.75rem 1rem;
-            font-size: 0.9rem;
-            color: #1e293b;
-            background-color: #f8fafc;
-            transition: all 0.2s;
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: var(--surface-light);
+            font-size: 0.95rem;
+            color: var(--ink);
+            transition: border-color 0.2s;
         }
-        .form-control:focus, .form-select:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            background-color: #fff;
-            outline: 0;
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--brand);
+            background: #fff;
         }
-        textarea.form-control { resize: none; }
 
         .btn-submit {
             width: 100%;
-            background: #1e3a8a;
+            padding: 1rem;
+            background: var(--brand);
             color: #fff;
-            padding: 0.9rem;
-            border-radius: 14px;
-            font-weight: 700;
-            font-size: 0.95rem;
             border: none;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
-            transition: all 0.2s;
-            margin-top: 1rem;
-        }
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3);
-            background: #172554;
+            box-shadow: 0 4px 12px var(--brand-light);
         }
 
-        /* History Section */
-        .history-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 1rem;
-            padding-left: 0.5rem;
-        }
+        /* History List */
+        .history-list { display: flex; flex-direction: column; gap: 0.75rem; }
         
         .history-card {
             background: #fff;
-            border-radius: 16px;
             padding: 1rem;
-            margin-bottom: 12px;
-            border: 1px solid #f1f5f9;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line);
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 1rem;
+            transition: transform 0.2s;
         }
-        .history-icon {
-            width: 42px; height: 42px;
+        .history-card:hover { transform: translateY(-2px); }
+
+        .type-icon {
+            width: 44px; height: 44px;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
+            background: var(--surface);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            color: var(--muted);
             flex-shrink: 0;
-            margin-right: 12px;
         }
-        .history-info { flex-grow: 1; }
-        .history-type { font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 2px; }
-        .history-date { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        
+        .req-info { flex: 1; }
+        .req-title { font-weight: 700; color: var(--ink); font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .req-date { font-size: 0.8rem; color: var(--muted); }
+        
         .status-badge {
             font-size: 0.7rem;
             font-weight: 700;
-            padding: 0.3rem 0.6rem;
-            border-radius: 8px;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
             text-transform: uppercase;
         }
-        .status-pending { background: #fef9c3; color: #854d0e; }
-        .status-approved { background: #dcfce7; color: #166534; }
-        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+        .status-approved { background: #effdf5; color: #15803d; border: 1px solid #dcfce7; }
+        .status-rejected { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
 
-        /* Animation */
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Cancel Button Overlay */
-        .cancel-btn {
-            background: #fee2e2;
-            color: #ef4444;
-            border: none;
-            border-radius: 8px;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
     </style>
 
-    <div x-data="{ tab: 'leave', showForm: true }" class="page-container">
-        
-        <!-- Header Section -->
-        <div class="header-card">
-            <h1 class="header-title">My Requests</h1>
-            <p class="header-desc">Manage your Leave, Overtime (OT), and Day Off changes.</p>
-            <span class="date-pill">{{ \Carbon\Carbon::now()->format('D, M d') }}</span>
+    <div x-data="{ tab: 'leave', showForm: false }" class="pb-5">
+
+        <!-- Tabs -->
+        <div class="segmented-control">
+            <div class="segment-btn" :class="tab==='leave' && 'active'" @click="tab='leave'; showForm=false">Leave</div>
+            <div class="segment-btn" :class="tab==='ot' && 'active'" @click="tab='ot'; showForm=false">Overtime</div>
+            <div class="segment-btn" :class="tab==='dayoff' && 'active'" @click="tab='dayoff'; showForm=false">Day Off</div>
         </div>
 
-        <!-- Selection Controls -->
-        <div class="d-flex justify-content-between align-items-center mb-3 px-2">
-            <span style="font-size:0.85rem; font-weight:700; color:#475569;">Select request type</span>
-            <button x-show="showForm" @click="showForm = false" class="cancel-btn">
-                <i class="fa-solid fa-xmark"></i> Cancel
-            </button>
-            <button x-show="!showForm" @click="showForm = true" class="cancel-btn" style="background:#e0f2fe; color:#0369a1;">
-                <i class="fa-solid fa-plus"></i> New
+        <!-- Toolbar -->
+        <div class="action-bar">
+            <div class="section-label" x-text="showForm ? 'New Request' : 'Recent History'"></div>
+            <button class="btn-new" :class="showForm ? 'btn-cancel' : ''" @click="showForm = !showForm">
+                <span x-text="showForm ? 'Cancel' : 'New Request'"></span>
+                <span x-show="!showForm">+</span>
             </button>
         </div>
 
-        <div class="tabs-container">
-            <div class="tab-btn" :class="tab === 'leave' ? 'active' : ''" @click="tab = 'leave'; showForm = true">
-                <i class="fa-regular fa-calendar-check"></i>
-                <span>Leave</span>
-            </div>
-            <div class="tab-btn" :class="tab === 'ot' ? 'active' : ''" @click="tab = 'ot'; showForm = true">
-                <i class="fa-regular fa-clock"></i>
-                <span>Overtime</span>
-            </div>
-            <div class="tab-btn" :class="tab === 'dayoff' ? 'active' : ''" @click="tab = 'dayoff'; showForm = true">
-                <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                <span>Day Off</span>
-            </div>
-        </div>
-
-        <!-- Forms Area -->
-        <div x-show="showForm" x-transition.opacity.duration.300ms>
+        <!-- Forms -->
+        <div x-show="showForm" x-transition>
             
             <!-- Leave Form -->
-            <div x-show="tab === 'leave'" class="form-card fade-in">
-                <div class="form-header">
-                    <div class="form-icon">
-                        <i class="fa-regular fa-calendar-plus"></i>
-                    </div>
-                    <h3 class="form-title">New Leave Request</h3>
-                </div>
-
+            <div x-show="tab === 'leave'" class="form-card">
                 <form method="POST" enctype="multipart/form-data" action="{{ route('employee.leave.store') }}">
                     @csrf
                     <div class="form-group">
                         <label class="form-label">Leave Type</label>
                         <select name="leave_type_id" class="form-select" required>
-                            <option value="">— Select Type —</option>
+                            <option value="">Select Type...</option>
                             @foreach($leaveTypes as $type)
                                 <option value="{{ $type->id }}">{{ $type->name }}</option>
                             @endforeach
                         </select>
                     </div>
-
                     <div class="row">
                         <div class="col-6 form-group">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" name="start_date" class="form-control" required>
+                            <label class="form-label">From</label>
+                            <input type="date" name="start_date" class="form-input" required>
                         </div>
                         <div class="col-6 form-group">
-                            <label class="form-label">End Date</label>
-                            <input type="date" name="end_date" class="form-control" required>
+                            <label class="form-label">To</label>
+                            <input type="date" name="end_date" class="form-input" required>
                         </div>
                     </div>
-
                     <div class="form-group">
-                        <label class="form-label">Reason <span class="text-muted fw-normal">(optional)</span></label>
-                        <textarea name="reason" class="form-control" rows="3" placeholder="Why are you requesting leave?"></textarea>
+                        <label class="form-label">Reason</label>
+                        <textarea name="reason" class="form-textarea" rows="3" placeholder="Reason for leave..."></textarea>
                     </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Attachment <span class="text-muted fw-normal">(optional)</span></label>
-                        <input type="file" name="attachment" class="form-control">
-                    </div>
-
-                    <button type="submit" class="btn-submit">Submit Leave Request</button>
+                    <button type="submit" class="btn-submit">Submit Request</button>
                 </form>
             </div>
 
-            <!-- Overtime Form -->
-            <div x-show="tab === 'ot'" x-cloak class="form-card fade-in" 
-                 x-data="{ start:'', end:'', hours:'0.0', calc() { if(this.start&&this.end){let s=new Date('1970-01-01T'+this.start),e=new Date('1970-01-01T'+this.end);this.hours=e>s?((e-s)/3600000).toFixed(1):'—';} } }">
-                <div class="form-header">
-                    <div class="form-icon" style="background:#fef9c3; color:#b45309;">
-                        <i class="fa-solid fa-stopwatch"></i>
-                    </div>
-                    <h3 class="form-title">New Overtime Request</h3>
-                </div>
-
+            <!-- OT Form -->
+            <div x-show="tab === 'ot'" class="form-card">
                 <form method="POST" action="{{ route('employee.overtime.store') }}">
                     @csrf
                     <div class="form-group">
                         <label class="form-label">Date</label>
-                        <input type="date" name="ot_date" class="form-control" required>
+                        <input type="date" name="ot_date" class="form-input" required>
                     </div>
-
                     <div class="row">
                         <div class="col-6 form-group">
                             <label class="form-label">Start Time</label>
-                            <input type="time" name="start_time" x-model="start" @input="calc()" class="form-control" required>
+                            <input type="time" name="start_time" class="form-input" required>
                         </div>
                         <div class="col-6 form-group">
                             <label class="form-label">End Time</label>
-                            <input type="time" name="end_time" x-model="end" @input="calc()" class="form-control" required>
+                            <input type="time" name="end_time" class="form-input" required>
                         </div>
                     </div>
-
-                    <div class="mb-3 p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
-                        <span class="small fw-bold text-muted">Estimated Hours</span>
-                        <span class="fw-bold text-dark" x-text="hours + ' hrs'"></span>
-                    </div>
-
                     <div class="form-group">
                         <label class="form-label">Task / Reason</label>
-                        <textarea class="form-control" name="reason" rows="3" placeholder="What task will be accomplished?"></textarea>
+                        <textarea name="reason" class="form-textarea" rows="3" placeholder="Work description..."></textarea>
                     </div>
-
-                    <button type="submit" class="btn-submit" style="background:linear-gradient(135deg,#d97706,#92400e)">Submit OT Request</button>
+                    <button type="submit" class="btn-submit">Submit OT Request</button>
                 </form>
             </div>
 
             <!-- Day Off Form -->
-            <div x-show="tab === 'dayoff'" x-cloak class="form-card fade-in">
-                <div class="form-header">
-                    <div class="form-icon" style="background:#ede9fe; color:#6d28d9;">
-                        <i class="fa-solid fa-shuffle"></i>
-                    </div>
-                    <h3 class="form-title">Change Day Off</h3>
-                </div>
-
+            <div x-show="tab === 'dayoff'" class="form-card">
                 <form method="POST" action="{{ route('employee.changedayoff.store') }}">
                     @csrf
                     <div class="form-group">
-                        <label class="form-label">Original Day Off</label>
-                        <input type="date" name="original_date" class="form-control" required>
+                        <label class="form-label">Current Day Off</label>
+                        <input type="date" name="original_date" class="form-input" required>
                     </div>
-
-                    <div class="text-center my-2 text-muted">
-                        <i class="fa-solid fa-arrow-down"></i>
-                    </div>
-
                     <div class="form-group">
-                        <label class="form-label">New Preferred Date</label>
-                        <input type="date" name="requested_date" class="form-control" required>
+                        <label class="form-label">New Date</label>
+                        <input type="date" name="requested_date" class="form-input" required>
                     </div>
-
                     <div class="form-group">
                         <label class="form-label">Reason</label>
-                        <textarea class="form-control" name="reason" rows="2" placeholder="Brief explanation"></textarea>
+                        <textarea name="reason" class="form-textarea" rows="3" placeholder="Reason for change..."></textarea>
                     </div>
-
-                    <button type="submit" class="btn-submit" style="background:linear-gradient(135deg,#6d28d9,#4c1d95)">Submit Request</button>
+                    <button type="submit" class="btn-submit">Submit Change</button>
                 </form>
             </div>
+
         </div>
 
-        <!-- History Section -->
-        <h2 class="history-title">Request History</h2>
-
-        <!-- Leave History -->
-        <div x-show="tab === 'leave'">
-            @forelse($leaveRequests as $leave)
-            <div class="history-card fade-in">
-                <div class="d-flex align-items-center w-100">
-                    <div class="history-icon" style="background:#e0f2fe; color:#0369a1;">
-                        <i class="fa-regular fa-calendar-check"></i>
-                    </div>
-                    <div class="history-info">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="history-type">{{ $leave->leaveType->name }}</div>
-                                <div class="history-date">{{ $leave->start_date->format('M d') }} - {{ $leave->end_date->format('M d, Y') }}</div>
+        <!-- History Lists -->
+        <div x-show="!showForm" class="history-list">
+            
+            <!-- Leave List -->
+            <template x-if="tab === 'leave'">
+                <div class="d-flex flex-column gap-3">
+                    @forelse($leaveRequests as $leave)
+                        <div class="history-card">
+                            <div class="type-icon" style="color:var(--brand); background:var(--brand-light)">
+                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
                             </div>
-                            <span class="status-badge status-{{ strtolower($leave->status) }}">{{ $leave->status }}</span>
-                        </div>
-                        @if($leave->admin_comment)
-                            <div class="small text-danger mt-1 p-1 bg-light rounded px-2" style="font-size:0.7rem;">Note: {{ $leave->admin_comment }}</div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            @empty
-            <div class="text-center py-4 text-muted border rounded-3 bg-white">
-                <i class="fa-regular fa-folder-open mb-2 display-6"></i>
-                <p class="small m-0">No leave requests found</p>
-            </div>
-            @endforelse
-            <div class="mt-3">{{ $leaveRequests->links() }}</div>
-        </div>
-
-        <!-- OT History -->
-        <div x-show="tab === 'ot'" x-cloak>
-            @forelse($otRequests as $ot)
-            <div class="history-card fade-in">
-                <div class="d-flex align-items-center w-100">
-                    <div class="history-icon" style="background:#fef9c3; color:#b45309;">
-                        <i class="fa-solid fa-clock"></i>
-                    </div>
-                    <div class="history-info">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="history-type">Overtime</div>
-                                <div class="history-date">{{ \Carbon\Carbon::parse($ot->ot_date)->format('M d, Y') }} • {{ number_format($ot->total_hours, 1) }}h</div>
+                            <div class="req-info">
+                                <div class="req-title">{{ $leave->leaveType->name }}</div>
+                                <div class="req-date">{{ $leave->start_date->format('M d') }} - {{ $leave->end_date->format('M d, Y') }}</div>
                             </div>
-                            <span class="status-badge status-{{ strtolower($ot->status) }}">{{ $ot->status }}</span>
+                            <div class="status-badge status-{{ strtolower($leave->status) }}">{{ $leave->status }}</div>
                         </div>
-                    </div>
+                    @empty
+                        <div style="text-align:center; padding:3rem 1rem; color:var(--muted)">No leave requests found.</div>
+                    @endforelse
+                    <div class="mt-3">{{ $leaveRequests->links() }}</div>
                 </div>
-            </div>
-            @empty
-            <div class="text-center py-4 text-muted border rounded-3 bg-white">
-                <i class="fa-regular fa-folder-open mb-2 display-6"></i>
-                <p class="small m-0">No overtime requests found</p>
-            </div>
-            @endforelse
-            <div class="mt-3">{{ $otRequests->links() }}</div>
-        </div>
+            </template>
+            
+            <!-- OT List -->
+            <template x-if="tab === 'ot'">
+                <div class="d-flex flex-column gap-3">
+                    @forelse($otRequests as $ot)
+                        <div class="history-card">
+                            <div class="type-icon" style="color:#d97706; background:#fef3c7">
+                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+                            </div>
+                            <div class="req-info">
+                                <div class="req-title">Overtime</div>
+                                <div class="req-date">{{ \Carbon\Carbon::parse($ot->ot_date)->format('M d, Y') }} • {{ number_format($ot->total_hours, 1) }} hrs</div>
+                            </div>
+                            <div class="status-badge status-{{ strtolower($ot->status) }}">{{ $ot->status }}</div>
+                        </div>
+                    @empty
+                        <div style="text-align:center; padding:3rem 1rem; color:var(--muted)">No overtime requests found.</div>
+                    @endforelse
+                    <div class="mt-3">{{ $otRequests->links() }}</div>
+                </div>
+            </template>
 
-         <!-- Day Off History -->
-         <div x-show="tab === 'dayoff'" x-cloak>
-            @forelse($dayoffRequests as $req)
-            <div class="history-card fade-in">
-                <div class="d-flex align-items-center w-100">
-                    <div class="history-icon" style="background:#ede9fe; color:#6d28d9;">
-                        <i class="fa-solid fa-shuffle"></i>
-                    </div>
-                    <div class="history-info">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="history-type">Day Off Change</div>
-                                <div class="history-date">
-                                    <span class="text-danger text-decoration-line-through">{{ \Carbon\Carbon::parse($req->original_date)->format('M d') }}</span>
-                                    <i class="fa-solid fa-arrow-right mx-1 text-muted" style="font-size:0.7em"></i>
-                                    <span class="text-success">{{ \Carbon\Carbon::parse($req->requested_date)->format('M d') }}</span>
+            <!-- Day Off List -->
+            <template x-if="tab === 'dayoff'">
+                <div class="d-flex flex-column gap-3">
+                    @forelse($dayoffRequests as $req)
+                        <div class="history-card">
+                            <div class="type-icon" style="color:#9333ea; background:#f3e8ff">
+                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </div>
+                            <div class="req-info">
+                                <div class="req-title">Day Off Change</div>
+                                <div class="req-date">
+                                    <span style="text-decoration:line-through; opacity:0.6">{{ \Carbon\Carbon::parse($req->original_date)->format('M d') }}</span>
+                                    → {{ \Carbon\Carbon::parse($req->requested_date)->format('M d') }}
                                 </div>
                             </div>
-                            <span class="status-badge status-{{ strtolower($req->status) }}">{{ $req->status }}</span>
+                            <div class="status-badge status-{{ strtolower($req->status) }}">{{ $req->status }}</div>
                         </div>
-                    </div>
+                    @empty
+                        <div style="text-align:center; padding:3rem 1rem; color:var(--muted)">No day off requests found.</div>
+                    @endforelse
+                    <div class="mt-3">{{ $dayoffRequests->links() }}</div>
                 </div>
-            </div>
-            @empty
-            <div class="text-center py-4 text-muted border rounded-3 bg-white">
-                <i class="fa-regular fa-folder-open mb-2 display-6"></i>
-                <p class="small m-0">No day-off requests found</p>
-            </div>
-            @endforelse
-            <div class="mt-3">{{ $dayoffRequests->links() }}</div>
+            </template>
+
         </div>
 
-        <div style="height: 100px;"></div>
     </div>
+
 </x-layouts.employee>

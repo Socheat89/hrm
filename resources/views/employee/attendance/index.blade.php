@@ -1,352 +1,380 @@
-<x-layouts.employee page-title="My Attendance" page-description="Check your daily records, month summary, and detailed scan logs.">
-    @php
-        $carbonMonth = \Carbon\Carbon::createFromFormat('Y-m', $month)->startOfMonth();
-        $daysInMonth = $carbonMonth->daysInMonth;
-        $firstWeekday = $carbonMonth->dayOfWeek;
-        $today = now()->toDateString();
-
-        $colorByStatus = [
-            'present' => 'cs-present',
-            'late'    => 'cs-late',
-            'absent'  => 'cs-absent',
-            'leave'   => 'cs-leave',
-            'future'  => 'cs-future',
-        ];
-    @endphp
+<x-layouts.employee page-title="Attendance" :back-url="route('employee.dashboard')">
 
     <style>
-        /* ── Month nav ─────────────────────────────────── */
-        .month-nav {
-            display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+        .month-selector {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--line);
         }
-        .month-nav input[type="month"] {
-            border: 1.5px solid #c8ddf0; border-radius: 12px;
-            padding: .48rem .75rem; font-size: .88rem; font-weight: 600;
-            color: #1a2d42; background: #fff; cursor: pointer;
+        
+        .month-nav-btn {
+            background: var(--surface);
+            border: none;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--ink);
+            cursor: pointer;
         }
-        .month-nav input[type="month"]:focus { outline: none; border-color: var(--brand); }
-
-        /* ── Legend pills ───────────────────────────────── */
-        .legend-pill {
-            display: inline-flex; align-items: center; gap: 5px;
-            font-size: .71rem; font-weight: 700; padding: .28rem .65rem;
-            border-radius: 999px; border: 1px solid transparent;
-            letter-spacing: .02em;
-        }
-        .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
-
-        /* ── Calendar ───────────────────────────────────── */
-        .calendar-wrap { overflow-x: auto; padding-bottom: .2rem; }
-
-        .calendar-weekdays,
-        .calendar-grid {
-            min-width: 600px;
-            display: grid;
-            grid-template-columns: repeat(7, minmax(78px, 1fr));
-            gap: .38rem;
+        
+        .current-month {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            color: var(--ink);
         }
 
-        .calendar-weekdays div {
-            text-align: center; font-size: .71rem; font-weight: 800;
-            color: #6b7d90; background: #f0f6fd;
-            border: 1px solid #dce8f6; border-radius: 10px;
-            padding: .38rem .2rem; letter-spacing: .05em; text-transform: uppercase;
-        }
-
-        .calendar-empty {
-            border-radius: 13px; border: 1px dashed #dce8f6;
-            background: #f8fbff; min-height: 68px;
-        }
-
-        .calendar-day {
-            border-radius: 13px; min-height: 68px;
-            padding: .42rem .5rem; text-align: left;
-            font-size: .71rem; font-weight: 700;
-            transition: transform .15s, box-shadow .15s;
-            cursor: pointer; background: #fff;
-            border: 1.5px solid #dce8f6;
-        }
-        .calendar-day:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(13,31,53,.13); }
-        .day-number { font-size: .88rem; font-weight: 800; margin-bottom: 3px; }
-        .day-status { font-size: .65rem; text-transform: capitalize; font-weight: 700; opacity: .9; }
-        .day-today { box-shadow: 0 0 0 2.5px var(--brand); }
-
-        /* Status color tokens */
-        .cs-present { background: #ecfcf2; border-color: #6ee7a7; color: #166534; }
-        .cs-late     { background: #fffbea; border-color: #fce787; color: #92400e; }
-        .cs-absent   { background: #fff1f1; border-color: #fca5a5; color: #991b1b; }
-        .cs-leave    { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
-        .cs-future   { background: #fafbfc; border-color: #dce8f6; color: #7a8fa4; }
-
-        /* ── Summary cards ──────────────────────────────── */
-        .att-summary-grid {
+        /* Stats Grid */
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: .75rem;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
         }
-        @media(min-width:576px) { .att-summary-grid { grid-template-columns: repeat(4, 1fr); } }
-
-        .att-stat {
-            border-radius: 16px; border: 1px solid var(--ln);
-            background: #fff; padding: 1rem .9rem; text-align: center;
-            box-shadow: 0 2px 8px rgba(13,31,53,.05);
-            transition: transform .18s, box-shadow .18s;
+        
+        .stat-card {
+            background: #fff;
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line);
+            text-align: center;
         }
-        .att-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(13,31,53,.1); }
-        .att-stat .att-icon { font-size: 1.45rem; margin-bottom: .35rem; }
-        .att-stat .att-val { font-family: 'Sora','Inter',sans-serif; font-size: 1.55rem; font-weight: 800; line-height: 1; color: #0d1f35; }
-        .att-stat .att-label { font-size: .7rem; font-weight: 700; color: #6b7d90; margin-top: .25rem; text-transform: uppercase; letter-spacing: .04em; }
+        
+        .stat-value {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
 
-        /* ── Detail sheet ───────────────────────────────── */
-        .att-sheet {
-            position: fixed; inset: 0; z-index: 1120;
+        /* Calendar */
+        .calendar-container {
+            background: #fff;
+            border-radius: var(--radius-xl);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--line);
+            overflow: hidden;
+        }
+        
+        .weekdays-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .weekday-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        
+        .day-cell {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .day-cell.empty { background: transparent; cursor: default; }
+        
+        /* Status Colors */
+        .status-present { background: #dcfce7; color: #166534; }
+        .status-late    { background: #fef9c3; color: #a16207; }
+        .status-absent  { background: #fee2e2; color: #991b1b; }
+        .status-leave   { background: #dbeafe; color: #1e40af; }
+        .status-holiday { background: #f3e8ff; color: #6b21a8; }
+        .status-none    { background: var(--surface); color: var(--muted); }
+        
+        .day-cell.today {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 2px var(--brand-light);
+        }
+
+        .status-dot {
+            width: 4px; height: 4px; border-radius: 50%;
+            margin-top: 2px;
+            background: currentColor;
+            opacity: 0.7;
+        }
+
+        /* Bottom Sheet */
+        .sheet-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
             opacity: 0; pointer-events: none;
-            transition: opacity .22s ease;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(2px);
         }
-        .att-sheet.open { opacity: 1; pointer-events: auto; }
-
-        .att-sheet-backdrop {
-            position: absolute; inset: 0;
-            background: rgba(8,20,36,.55);
-            backdrop-filter: blur(4px) saturate(120%);
+        .sheet-container {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            background: #fff;
+            border-radius: 24px 24px 0 0;
+            z-index: 1001;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            max-height: 85vh;
+            display: flex; flex-direction: column;
+        }
+        
+        .sheet-open .sheet-overlay { opacity: 1; pointer-events: auto; }
+        .sheet-open .sheet-container { transform: translateY(0); }
+        
+        .sheet-header {
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--line);
+        }
+        .sheet-handle {
+            width: 40px; height: 4px; background: var(--line);
+            border-radius: 10px; margin: 0 auto 1rem;
+        }
+        .sheet-date { font-family: 'Sora'; font-size: 1.25rem; font-weight: 700; color: var(--ink); }
+        .sheet-status { 
+            display: inline-block; padding: 0.25rem 0.75rem; 
+            border-radius: 50px; font-size: 0.8rem; font-weight: 600; 
+            margin-top: 0.5rem;
         }
 
-        .att-sheet-panel {
-            position: absolute; left: 0; right: 0; bottom: 0;
-            max-height: 82vh; overflow-y: auto;
-            background: #fff; border-radius: 22px 22px 0 0;
-            border-top: 1px solid #d4dfee;
-            transform: translateY(105%);
-            transition: transform .24s cubic-bezier(.32,1,.28,1);
-            box-shadow: 0 -22px 50px rgba(8,22,44,.22);
-        }
-        .att-sheet.open .att-sheet-panel { transform: translateY(0); }
-
-        .att-sheet-handle {
-            width: 44px; height: 4px; border-radius: 99px;
-            background: #c8d8ea; margin: 10px auto 0; cursor: pointer;
-        }
-
-        .sheet-date-badge {
-            background: linear-gradient(135deg,#1e3a5f,#2d6ec0);
-            color: #fff; border-radius: 14px; padding: .9rem 1rem;
+        .sheet-body { padding: 1.5rem; overflow-y: auto; }
+        
+        .detail-row {
+            display: flex; justify-content: space-between;
             margin-bottom: 1rem;
+            font-size: 0.9rem;
         }
-        .sheet-date-badge .sd-date { font-family:'Sora','Inter',sans-serif; font-size:1.15rem; font-weight:800; }
-        .sheet-date-badge .sd-status { font-size:.75rem; font-weight:700; opacity:.8; margin-top:.2rem; }
+        .detail-label { color: var(--muted); }
+        .detail-val { font-weight: 600; color: var(--ink); }
 
-        .att-detail-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: .5rem 0; border-bottom: 1px solid #f0f5fa;
-            font-size: .82rem;
+        .timeline-item {
+            display: flex; gap: 1rem;
+            padding-bottom: 1.5rem;
+            position: relative;
         }
-        .att-detail-row:last-child { border-bottom: 0; }
-        .att-detail-row span { color: #6b7d90; font-weight: 500; }
-        .att-detail-row strong { color: #1a2d42; font-weight: 700; }
-
-        .scan-list { list-style: none; margin: 0; padding: 0; }
-        .scan-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: .52rem .75rem; border-radius: 11px;
-            background: #f7fafd; border: 1px solid #e6eff8;
-            margin-bottom: .4rem; font-size: .8rem;
+        .timeline-item::before {
+            content: ''; position: absolute; left: 7px; top: 24px; bottom: 0;
+            width: 2px; background: var(--line);
         }
-        .scan-item .scan-label { color: #546270; font-weight: 600; }
-        .scan-item .scan-time { color: #0d1f35; font-weight: 800; font-family:'Sora','Inter',sans-serif; }
-        .scan-item .scan-time.empty { color: #b0c0d0; font-weight: 500; }
-
-        .status-chip {
-            border-radius: 8px; font-size: .7rem; font-weight: 800;
-            padding: .25rem .6rem; text-transform: capitalize;
-            letter-spacing: .03em;
+        .timeline-item:last-child::before { display: none; }
+        
+        .timeline-dot {
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--brand);
+            flex-shrink: 0; margin-top: 4px;
+            border: 2px solid #fff; box-shadow: 0 0 0 2px var(--line);
         }
-        .chip-present { background:#dcfce7;color:#166534; }
-        .chip-late    { background:#fef9c3;color:#92400e; }
-        .chip-absent  { background:#fee2e2;color:#991b1b; }
-        .chip-leave   { background:#dbeafe;color:#1d4ed8; }
-        .chip-future  { background:#f1f5f9;color:#64748b; }
+        .timeline-dot.out { background: var(--muted); }
+        
+        .timeline-content h4 { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+        .timeline-content p { margin: 0; font-size: 0.8rem; color: var(--muted); }
     </style>
 
-    {{-- ── Month navigation + export ── --}}
-    <section class="card-soft p-3 mb-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <form method="GET" class="month-nav">
-                <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#4e86be" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
-                <input type="month" name="month" value="{{ $month }}" autofocus>
-                <button class="btn-brand" type="submit" style="display:inline-flex;align-items:center;gap:5px;font-size:.82rem;padding:.48rem .9rem">
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    Load
-                </button>
-            </form>
-            <a href="{{ route('employee.attendance.export', ['month' => $month]) }}" class="btn-quiet" style="display:inline-flex;align-items:center;gap:5px;font-size:.8rem;padding:.46rem .85rem">
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Export PDF
-            </a>
+    @php
+        $currentDate = \Carbon\Carbon::createFromFormat('Y-m', $month);
+        $prevMonth = $currentDate->copy()->subMonth()->format('Y-m');
+        $nextMonth = $currentDate->copy()->addMonth()->format('Y-m');
+        $isFuture = $currentDate->isFuture();
+    @endphp
+
+    <!-- Month Selector -->
+    <div class="month-selector">
+        <a href="?month={{ $prevMonth }}" class="month-nav-btn">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <div class="current-month">{{ $currentDate->format('F Y') }}</div>
+        @if(!$isFuture)
+        <a href="?month={{ $nextMonth }}" class="month-nav-btn">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        @else
+        <div class="month-nav-btn" style="opacity:0.3; cursor:default">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </div>
-    </section>
+        @endif
+    </div>
 
-    {{-- ── Calendar ── --}}
-    <section class="card-soft p-3 mb-4">
-        {{-- Legend --}}
-        <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="legend-pill" style="background:#ecfcf2;border-color:#6ee7a7;color:#166534"><span class="legend-dot" style="background:#22c55e"></span>Present</span>
-            <span class="legend-pill" style="background:#fffbea;border-color:#fce787;color:#92400e"><span class="legend-dot" style="background:#eab308"></span>Late</span>
-            <span class="legend-pill" style="background:#fff1f1;border-color:#fca5a5;color:#991b1b"><span class="legend-dot" style="background:#ef4444"></span>Absent</span>
-            <span class="legend-pill" style="background:#eff6ff;border-color:#93c5fd;color:#1d4ed8"><span class="legend-dot" style="background:#3b82f6"></span>Leave</span>
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" style="color:var(--success)">{{ $summary['present'] ?? 0 }}</div>
+            <div class="stat-label">Present</div>
         </div>
-
-        <div class="calendar-wrap">
-            <div class="calendar-weekdays mb-2">
-                <div>Sun</div>
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
-            </div>
-            <div class="calendar-grid">
-                @for($i = 0; $i < $firstWeekday; $i++)
-                    <div class="calendar-empty"></div>
-                @endfor
-
-                @for($day = 1; $day <= $daysInMonth; $day++)
-                    @php
-                        $date   = $carbonMonth->copy()->day($day)->toDateString();
-                        $record = $calendarData[$date] ?? null;
-                        $status = $record['status'] ?? ($date <= $today ? 'absent' : 'future');
-                        $color  = $colorByStatus[$status] ?? $colorByStatus['future'];
-                        $isToday = $date === $today;
-                    @endphp
-                    <button type="button"
-                            class="calendar-day {{ $color }} day-cell{{ $isToday ? ' day-today' : '' }}"
-                            data-date="{{ $date }}">
-                        <div class="day-number">{{ $day }}{{ $isToday ? ' ·' : '' }}</div>
-                        <div class="day-status">{{ $status }}</div>
-                    </button>
-                @endfor
-            </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:var(--warning)">{{ $summary['late'] ?? 0 }}</div>
+            <div class="stat-label">Late</div>
         </div>
-    </section>
-
-    {{-- ── Monthly Summary ── --}}
-    <section class="mb-4">
-        <h2 class="section-title">Monthly Summary</h2>
-        <div class="att-summary-grid">
-            <article class="att-stat">
-                <div class="att-icon">✅</div>
-                <div class="att-val" style="color:#166534">{{ $summary['present'] }}</div>
-                <div class="att-label">Present</div>
-            </article>
-            <article class="att-stat">
-                <div class="att-icon">⏰</div>
-                <div class="att-val" style="color:#92400e">{{ $summary['late'] }}</div>
-                <div class="att-label">Late</div>
-            </article>
-            <article class="att-stat">
-                <div class="att-icon">📅</div>
-                <div class="att-val" style="color:#1d4ed8">{{ $summary['leave'] }}</div>
-                <div class="att-label">Leave</div>
-            </article>
-            <article class="att-stat">
-                <div class="att-icon">💼</div>
-                <div class="att-val" style="color:#var(--brand)">{{ $summary['overtime'] }}</div>
-                <div class="att-label">OT Hours</div>
-            </article>
+        <div class="stat-card">
+            <div class="stat-value" style="color:var(--danger)">{{ $summary['absent'] ?? 0 }}</div>
+            <div class="stat-label">Absent</div>
         </div>
-    </section>
+        <div class="stat-card">
+            <div class="stat-value" style="color:var(--info)">{{ $summary['leave'] ?? 0 }}</div>
+            <div class="stat-label">Leave</div>
+        </div>
+    </div>
 
-    <div class="pb-5"></div>
+    <!-- Calendar -->
+    <div class="calendar-container">
+        <div class="weekdays-grid">
+            <div class="weekday-label">Sun</div>
+            <div class="weekday-label">Mon</div>
+            <div class="weekday-label">Tue</div>
+            <div class="weekday-label">Wed</div>
+            <div class="weekday-label">Thu</div>
+            <div class="weekday-label">Fri</div>
+            <div class="weekday-label">Sat</div>
+        </div>
+        
+        <div class="days-grid">
+            @php
+                $start = $currentDate->copy()->startOfMonth();
+                $end = $currentDate->copy()->endOfMonth();
+                $firstDayOfWeek = $start->dayOfWeek;
+                $daysInMonth = $start->daysInMonth;
+                $todayDate = now()->toDateString();
+            @endphp
+            
+            @for($i = 0; $i < $firstDayOfWeek; $i++)
+                <div class="day-cell empty"></div>
+            @endfor
 
-    {{-- ── Detail Sheet ── --}}
-    <div id="attDetailSheet" class="att-sheet" aria-hidden="true">
-        <div class="att-sheet-backdrop" data-close-detail></div>
-        <div class="att-sheet-panel">
-            <div class="att-sheet-handle" data-close-detail></div>
-            <div class="p-4">
-                <div id="attDetailBody"></div>
+            @for($d = 1; $d <= $daysInMonth; $d++)
+                @php
+                    $thisDate = $start->copy()->day($d)->toDateString();
+                    $data = $calendarData[$thisDate] ?? [];
+                    $status = $data['status'] ?? ($thisDate <= $todayDate ? 'absent' : 'none');
+                    if($thisDate > $todayDate) $status = 'none';
+                    
+                    $statusClass = match($status) {
+                        'present' => 'status-present',
+                        'late' => 'status-late',
+                        'absent' => 'status-absent',
+                        'leave' => 'status-leave',
+                        'holiday' => 'status-holiday',
+                        default => 'status-none'
+                    };
+                    
+                    $isToday = ($thisDate === $todayDate);
+                @endphp
+                
+                <div class="day-cell {{ $statusClass }} {{ $isToday ? 'today' : '' }}" 
+                     onclick="openSheet('{{ $thisDate }}', '{{ $status }}', '{{ json_encode($data['scans'] ?? []) }}')">
+                    <span>{{ $d }}</span>
+                    @if($status !== 'none' && $status !== 'absent')
+                        <div class="status-dot"></div>
+                    @endif
+                </div>
+            @endfor
+        </div>
+    </div>
+    
+    <div style="text-align:center; margin-top:1.5rem">
+        <a href="{{ route('employee.attendance.export', ['month' => $month]) }}" class="btn-secondary" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.2rem; border-radius:50px; font-size:0.9rem; font-weight:600; text-decoration:none;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/></svg>
+            Download Report (PDF)
+        </a>
+    </div>
+
+    <!-- Bottom Sheet -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+    <div class="sheet-container" id="sheetContainer">
+        <div class="sheet-header">
+            <div class="sheet-handle"></div>
+            <div class="sheet-date" id="sheetDate">October 24, 2023</div>
+            <div class="sheet-status" id="sheetStatus">Present</div>
+        </div>
+        <div class="sheet-body">
+            <div id="sheetContent">
+                <!-- Timeline populated by JS -->
             </div>
         </div>
     </div>
 
     <script>
-        const calendarData = @json($calendarData);
-        const today = '{{ $today }}';
-        const attSheet = document.getElementById('attDetailSheet');
-        const attBody  = document.getElementById('attDetailBody');
-
-        const statusChip = {
-            present : 'chip-present',
-            late    : 'chip-late',
-            absent  : 'chip-absent',
-            leave   : 'chip-leave',
-            future  : 'chip-future',
+    function openSheet(dateStr, status, scansJson) {
+        const date = new Date(dateStr);
+        document.getElementById('sheetDate').textContent = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        
+        const statusEl = document.getElementById('sheetStatus');
+        statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        
+        let color = '#64748b'; let bg = '#f1f5f9';
+        if(status==='present'){ color='#166534'; bg='#dcfce7'; }
+        else if(status==='late'){ color='#a16207'; bg='#fef9c3'; }
+        else if(status==='absent'){ color='#991b1b'; bg='#fee2e2'; }
+        else if(status==='leave'){ color='#1e40af'; bg='#dbeafe'; }
+        
+        statusEl.style.color = color;
+        statusEl.style.background = bg;
+        
+        const scans = JSON.parse(scansJson);
+        const content = document.getElementById('sheetContent');
+        content.innerHTML = '';
+        
+        const scanTypes = {
+            'Morning In': scans['Morning In'] || null,
+            'Lunch Out': scans['Lunch Out'] || null,
+            'Lunch In': scans['Lunch In'] || null,
+            'Evening Out': scans['Evening Out'] || null
         };
-
-        function fmtStatus(s) {
-            return s.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+        
+        let hasData = false;
+        
+        for (const [label, time] of Object.entries(scanTypes)) {
+            if(time) {
+                hasData = true;
+                const isOut = label.includes('Out');
+                const html = `
+                    <div class="timeline-item">
+                        <div class="timeline-dot ${isOut ? 'out' : ''}"></div>
+                        <div class="timeline-content">
+                            <h4>${label}</h4>
+                            <p>${time}</p>
+                        </div>
+                    </div>
+                `;
+                content.insertAdjacentHTML('beforeend', html);
+            }
         }
-
-        function metaRow(label, value) {
-            return `<div class="att-detail-row"><span>${label}</span><strong>${value}</strong></div>`;
+        
+        if(!hasData) {
+            content.innerHTML = '<div style="text-align:center; color:var(--muted); padding:2rem;">No scan records found for this date.</div>';
         }
-
-        function renderDetail(date) {
-            const d = calendarData[date] || {
-                status: date <= today ? 'absent' : 'future',
-                scans: {}, work_hours: 0, late_minutes: 0,
-                overtime_hours: 0, gps_status: 'N/A'
-            };
-            const chipCls = statusChip[d.status] || 'chip-future';
-            const dateObj  = new Date(date);
-            const dateStr  = dateObj.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-
-            const scanKeys = ['Morning In','Lunch Out','Lunch In','Evening Out'];
-            const scanHtml = scanKeys.map(k => {
-                const t = (d.scans && d.scans[k]) || null;
-                return `<li class="scan-item">
-                    <span class="scan-label">${k}</span>
-                    <span class="scan-time${t?'':' empty'}">${t || '—'}</span>
-                </li>`;
-            }).join('');
-
-            attBody.innerHTML = `
-                <div class="sheet-date-badge">
-                    <div class="sd-date">${dateStr}</div>
-                    <div class="sd-status"><span class="status-chip ${chipCls}" style="background:rgba(255,255,255,.18);color:#fff">${fmtStatus(d.status)}</span></div>
-                </div>
-
-                <div class="card-soft p-3 mb-3">
-                    ${metaRow('Work Hours', d.work_hours + ' hrs')}
-                    ${metaRow('Late Minutes', d.late_minutes + ' min')}
-                    ${metaRow('Overtime', d.overtime_hours + ' hrs')}
-                    ${metaRow('GPS Status', d.gps_status || 'N/A')}
-                </div>
-
-                <p class="section-title mb-2">Scan Times</p>
-                <ul class="scan-list">${scanHtml}</ul>
-            `;
-        }
-
-        function openDetail(date) {
-            renderDetail(date);
-            attSheet.classList.add('open');
-            attSheet.setAttribute('aria-hidden','false');
-        }
-
-        function closeDetail() {
-            attSheet.classList.remove('open');
-            attSheet.setAttribute('aria-hidden','true');
-        }
-
-        document.querySelectorAll('.day-cell').forEach(el => {
-            el.addEventListener('click', () => openDetail(el.dataset.date));
-        });
-        document.querySelectorAll('[data-close-detail]').forEach(el => {
-            el.addEventListener('click', closeDetail);
-        });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && attSheet.classList.contains('open')) closeDetail();
-        });
+        
+        document.body.classList.add('sheet-open');
+    }
+    
+    function closeSheet() {
+        document.body.classList.remove('sheet-open');
+    }
     </script>
+
 </x-layouts.employee>

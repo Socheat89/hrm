@@ -1,5 +1,5 @@
 @if(auth()->user()->hasRole('Employee'))
-<x-layouts.employee page-title="Profile" page-description="Manage your personal information and account security.">
+<x-layouts.employee page-title="Profile" :show-page-banner="false">
 <style>
 /* ── Profile Page ─────────────────────────────── */
 .profile-hero {
@@ -130,7 +130,7 @@
     border: none;
     padding: 0;
     cursor: pointer;
-    color: #94a3b8;
+    color: #64748b; /* --muted */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -140,6 +140,9 @@
     background-color: #f1f5f9;
     color: var(--brand);
 }
+
+/* Ensure inputs are visible */
+.col-md-6 .form-control, .col-md-4 .form-control { color: #1a324d; }
 /* ── Alert banners ────────────────────────────── */
 .profile-alert {
     border-radius: 10px;

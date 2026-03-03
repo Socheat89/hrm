@@ -309,25 +309,7 @@ class AttendanceService
         return $this->resolveFlowFromSchedule($schedule);
     }
 
-    private function getEffectiveSchedule(int $branchId, int $employeeId, int $dayOfWeek): ?Schedule
-    {
-        // 1. Employee-specific schedule
-        $custom = Schedule::query()
-            ->where('employee_id', $employeeId)
-            ->where('day_of_week', $dayOfWeek)
-            ->first();
 
-        if ($custom) {
-            return $custom;
-        }
-
-        // 2. Branch default (where employee_id is null)
-        return Schedule::query()
-            ->where('branch_id', $branchId)
-            ->whereNull('employee_id')
-            ->where('day_of_week', $dayOfWeek)
-            ->first();
-    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Guards

@@ -1,253 +1,228 @@
 <x-layouts.employee page-title="Dashboard" :showPageBanner="false">
     @php
-        $statusMap = [
-            'Present'  => ['gradient'=>'linear-gradient(135deg,#059669,#0f766e)', 'msg'=>"Great! You're present today."],
-            'Late'     => ['gradient'=>'linear-gradient(135deg,#d97706,#b45309)', 'msg'=>'You arrived a bit late today.'],
-            'Absent'   => ['gradient'=>'linear-gradient(135deg,#dc2626,#b91c1c)', 'msg'=>'No attendance recorded today.'],
-            'On Leave' => ['gradient'=>'linear-gradient(135deg,#2563eb,#1d4ed8)', 'msg'=>"You're on approved leave."],
+        $statusColors = [
+            'Present'  => ['bg'=>'#ecfdf5', 'text'=>'#059669', 'border'=>'#d1fae5', 'icon'=>'check-circle'],
+            'Late'     => ['bg'=>'#fffbeb', 'text'=>'#d97706', 'border'=>'#fde68a', 'icon'=>'clock'],
+            'Absent'   => ['bg'=>'#fef2f2', 'text'=>'#dc2626', 'border'=>'#fecaca', 'icon'=>'x-circle'],
+            'On Leave' => ['bg'=>'#eff6ff', 'text'=>'#2563eb', 'border'=>'#bfdbfe', 'icon'=>'calendar'],
         ];
-        $s = $statusMap[$todayStatus] ?? ['gradient'=>'linear-gradient(135deg,#475569,#334155)', 'msg'=>'Status not yet determined.'];
+        $s = $statusColors[$todayStatus] ?? ['bg'=>'#f1f5f9', 'text'=>'#475569', 'border'=>'#e2e8f0', 'icon'=>'help-circle'];
+        
+        $greeting = 'Good ' . (now()->hour < 12 ? 'Morning' : (now()->hour < 18 ? 'Afternoon' : 'Evening'));
     @endphp
 
     <style>
-        .hero-card {
-            border-radius: 22px;
-            padding: 1.5rem 1.4rem;
-            margin-bottom: 1.1rem;
-            color: #fff;
+        .hero-section {
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            color: white;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            box-shadow: var(--shadow-xl);
+            margin-bottom: 1.5rem;
         }
-        .hero-card::before {
-            content: '';
+        
+        .hero-pattern {
             position: absolute;
-            top: -50px; right: -50px;
-            width: 180px; height: 180px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.6;
         }
-        .hero-card::after {
-            content: '';
-            position: absolute;
-            bottom: -30px; left: -20px;
-            width: 130px; height: 130px;
-            background: rgba(0,0,0,0.08);
-            border-radius: 50%;
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
-        .hero-content { position: relative; z-index: 1; }
-        .hero-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; margin: 0; }
-        .hero-status { font-family: 'Sora','Inter',sans-serif; font-size: 2.1rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; margin: 0.3rem 0 0.4rem; }
-        .hero-msg { font-size: 0.83rem; opacity: 0.88; line-height: 1.5; margin: 0; }
-        .hero-date { font-size: 0.74rem; opacity: 0.7; margin-top: 0.4rem; display: flex; align-items: center; gap: 4px; }
-
-        .qs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7rem; margin-bottom: 1.1rem; }
-        @media (min-width: 480px) { .qs-grid { grid-template-columns: repeat(4, 1fr); } }
-
-        .qs-card {
+        
+        .stat-card {
             background: #fff;
-            border: 1px solid #dce8f6;
-            border-radius: 16px;
-            padding: 1rem 0.8rem;
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(13,31,53,0.06);
-            transition: transform 0.18s, box-shadow 0.18s;
+            transition: transform 0.2s;
         }
-        .qs-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(13,31,53,0.1); }
-        .qs-icon { font-size: 1.35rem; line-height: 1; margin-bottom: 0.4rem; }
-        .qs-val { font-family:'Sora','Inter',sans-serif; font-size: 1.75rem; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
-        .qs-lbl { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #6b7d90; margin-top: 0.3rem; }
+        .stat-card:active { transform: scale(0.98); }
+        
+        .stat-value { font-size: 1.5rem; font-weight: 800; font-family: 'Sora', sans-serif; line-height: 1.2; }
+        .stat-label { font-size: 0.7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-        .quicklink-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1.1rem; }
-        .quicklink {
+        .action-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-item {
             background: #fff;
-            border: 1px solid #dce8f6;
-            border-radius: 14px;
-            padding: 0.95rem 1rem;
-            display: flex; align-items: center; gap: 0.75rem;
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
             text-decoration: none;
-            color: #0d1f35;
-            font-weight: 600; font-size: 0.83rem;
-            transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
-            box-shadow: 0 2px 8px rgba(13,31,53,0.05);
+            color: var(--ink);
+            transition: border-color 0.2s;
         }
-        .quicklink:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13,31,53,0.1); border-color: #a8cbe8; color: #1a3255; }
-        .ql-icon { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .ql-icon svg { width: 18px; height: 18px; }
+        .action-item:active { background: var(--surface-soft); }
 
-        .section-head { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1rem 0.75rem; border-bottom: 1px solid #edf2f8; }
-        .section-head h3 { font-family:'Sora','Inter',sans-serif; font-size: 0.87rem; font-weight: 700; margin: 0; color: #0d1f35; display:flex;align-items:center;gap:6px; }
-
-        .tl-wrap { padding: 0.75rem 1rem; }
-        .tl-item { display: flex; gap: 0.8rem; align-items: flex-start; padding: 0.55rem 0; position: relative; }
-        .tl-item:not(:last-child)::after {
-            content: ''; position: absolute;
-            left: 14px; top: 36px;
-            width: 2px; height: calc(100% - 14px);
-            background: #e5edf6;
+        .action-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
         }
-        .tl-dot { width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
-        .tl-dot svg { width: 14px; height: 14px; }
-        .tl-dot.in  { background: #dcfce7; color: #15803d; }
-        .tl-dot.out { background: #fef3c7; color: #b45309; }
-        .tl-meta { flex: 1; padding-top: 0.15rem; }
-        .tl-type { font-size: 0.82rem; font-weight: 700; color: #0d1f35; }
-        .tl-time { font-size: 0.72rem; color: #7a8fa4; margin-top: 0.08rem; }
-
-        .payslip-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem; border-bottom: 1px solid #f0f5fa; }
-        .payslip-row:last-child { border-bottom: 0; }
-        .payslip-row .pr-label { font-size: 0.79rem; color: #546270; }
-        .payslip-row .pr-val { font-size: 0.82rem; font-weight: 700; color: #0d1f35; }
-
-        @media (min-width: 768px) {
-            .bottom-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+        
+        .timeline-container {
+            position: relative;
+            padding-left: 1.5rem;
         }
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 7px; top: 10px; bottom: 10px;
+            width: 2px; background: var(--line);
+            border-radius: 2px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -1.5rem; top: 0.25rem;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--muted);
+            z-index: 1;
+        }
+        .timeline-dot.active { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); }
     </style>
 
-    {{-- ── HERO STATUS ── --}}
-    <div class="hero-card" style="background: {{ $s['gradient'] }}">
-        <div class="hero-content d-flex justify-content-between align-items-start">
-            <div>
-                <p class="hero-label">Today's Status</p>
-                <h2 class="hero-status">{{ $todayStatus }}</h2>
-                <p class="hero-msg">{{ $s['msg'] }}</p>
-                <p class="hero-date">
-                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-.5 5h1v6l5.25 3.15-.75 1.23L11 14V7z"/></svg>
-                    {{ now()->format('l, F j, Y') }}
-                </p>
-            </div>
-            <a href="{{ route('employee.attendance.scan') }}"
-               style="background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.3);border-radius:12px;padding:.6rem .9rem;color:#fff;text-decoration:none;font-size:.78rem;font-weight:700;white-space:nowrap;backdrop-filter:blur(6px);flex-shrink:0;display:inline-flex;align-items:center;gap:5px;transition:background .2s"
-               onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
-                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/></svg>
-                Scan Now
-            </a>
-        </div>
-    </div>
-
-    {{-- ── STAT CARDS ── --}}
-    <div class="qs-grid">
-        <div class="qs-card">
-            <div class="qs-icon">📅</div>
-            <div class="qs-val" style="color:#0d7a47">{{ $presentDays }}</div>
-            <div class="qs-lbl">Present</div>
-        </div>
-        <div class="qs-card">
-            <div class="qs-icon">⏰</div>
-            <div class="qs-val" style="color:#c07900">{{ $lateDays }}</div>
-            <div class="qs-lbl">Late</div>
-        </div>
-        <div class="qs-card">
-            <div class="qs-icon">🚫</div>
-            <div class="qs-val" style="color:#b53535">{{ $absentDays }}</div>
-            <div class="qs-lbl">Absent</div>
-        </div>
-        <div class="qs-card">
-            <div class="qs-icon">🌴</div>
-            <div class="qs-val" style="color:#285f9c">{{ $leaveTaken }}</div>
-            <div class="qs-lbl">Leave</div>
-        </div>
-    </div>
-
-    {{-- ── QUICK LINKS ── --}}
-    <div class="quicklink-grid">
-        <a href="{{ route('employee.attendance.scan') }}" class="quicklink">
-            <div class="ql-icon" style="background:#e0f2fe;color:#0369a1">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/></svg>
-            </div>
-            Scan QR
-        </a>
-        <a href="{{ route('employee.leave.index') }}" class="quicklink">
-            <div class="ql-icon" style="background:#fef3c7;color:#b45309">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16h16V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            </div>
-            Request Leave
-        </a>
-        <a href="{{ route('employee.attendance.index') }}" class="quicklink">
-            <div class="ql-icon" style="background:#ede9fe;color:#6d28d9">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            Calendar
-        </a>
-        <a href="{{ route('employee.salary.index') }}" class="quicklink">
-            <div class="ql-icon" style="background:#dcfce7;color:#15803d">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            My Salary
-        </a>
-    </div>
-
-    {{-- ── BOTTOM CARDS ── --}}
-    <div class="bottom-2col d-grid gap-3 pb-5">
-
-        {{-- Timeline --}}
-        <div class="app-card overflow-hidden">
-            <div class="section-head">
-                <h3>
-                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#2563eb" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Today's Timeline
-                </h3>
-                <span style="font-size:.71rem;color:#8294a8;font-weight:600">{{ now()->format('d M Y') }}</span>
-            </div>
-            <div class="tl-wrap">
-                @php $scannedLogs = collect($timelineLogs ?? [])->filter(fn($l) => $l['scanned']); @endphp
-                @if($scannedLogs->count() > 0)
-                    @foreach($scannedLogs as $log)
-                    <div class="tl-item">
-                        @php $isIn = str_contains(strtolower($log['label']), 'in'); @endphp
-                        <div class="tl-dot {{ $isIn ? 'in' : 'out' }}">
-                            @if($isIn)
-                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14"/></svg>
-                            @else
-                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
-                            @endif
-                        </div>
-                        <div class="tl-meta">
-                            <div class="tl-type">{{ $log['label'] }}</div>
-                            <div class="tl-time">{{ $log['time'] }}</div>
-                        </div>
+    <!-- Welcome / Status Card -->
+    <div class="hero-section">
+        <div class="hero-pattern"></div>
+        <div style="position:relative; z-index:2;">
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <div>
+                    <p style="margin:0; font-size:0.85rem; opacity:0.9;">{{ $greeting }}, {{ auth()->user()->first_name }}</p>
+                    <h1 style="margin:0.25rem 0 0.5rem; font-size:1.75rem; font-weight:800; font-family:'Sora',sans-serif;">{{ $todayStatus }}</h1>
+                    <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; opacity:0.8;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        {{ now()->format('l, M jS') }}
                     </div>
-                    @endforeach
-                @else
-                    <div class="text-center py-4">
-                        <div style="width:46px;height:46px;border-radius:13px;background:#f0f7ff;margin:0 auto .8rem;display:flex;align-items:center;justify-content:center">
-                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#4b90d9" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </div>
-                        <p style="font-size:.82rem;color:#6b7d90;margin:0 0 .5rem">No attendance recorded yet.</p>
-                        <a href="{{ route('employee.attendance.scan') }}" class="btn-brand" style="font-size:.77rem;padding:.48rem .9rem">Scan Now</a>
-                    </div>
+                </div>
+                
+                @if($todayStatus !== 'Present' && $todayStatus !== 'On Leave')
+                <a href="{{ route('employee.attendance.scan') }}" style="background:white; color:var(--brand); border:none; padding:0.6rem 1rem; border-radius:var(--radius-md); font-weight:700; font-size:0.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                    Scan
+                </a>
                 @endif
             </div>
         </div>
-
-        {{-- Latest Payslip --}}
-        @if(isset($payroll))
-        <div class="app-card overflow-hidden">
-            <div class="section-head">
-                <h3>
-                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    Latest Payslip
-                </h3>
-                <span style="font-size:.7rem;font-weight:700;padding:.22rem .55rem;border-radius:7px;{{ $payroll->status==='paid' ? 'background:#dcfce7;color:#166534' : 'background:#fef9c3;color:#854d0e' }}">
-                    {{ ucfirst($payroll->status) }}
-                </span>
-            </div>
-            <div class="payslip-row">
-                <span class="pr-label">Period</span>
-                <span class="pr-val">{{ $payroll->month }} {{ $payroll->year }}</span>
-            </div>
-            <div class="payslip-row">
-                <span class="pr-label">Net Pay</span>
-                <span class="pr-val" style="font-size:.98rem;color:#0d7a47">{{ number_format($payroll->net_salary ?? 0, 2) }} {{ $payroll->currency ?? '$' }}</span>
-            </div>
-            <div class="payslip-row" style="border:0;gap:.5rem">
-                <a href="{{ route('employee.salary.index') }}" class="btn-quiet" style="font-size:.77rem;padding:.5rem .85rem">View All</a>
-                <a href="{{ route('employee.salary.download', $payroll) }}" class="btn-brand" style="font-size:.77rem;padding:.5rem .9rem">
-                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Download PDF
-                </a>
-            </div>
-        </div>
-        @endif
     </div>
+
+    <!-- Stats Grid -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <span class="stat-value" style="color:var(--success)">{{ $presentDays }}</span>
+            <span class="stat-label">Present</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" style="color:var(--warning)">{{ $lateDays }}</span>
+            <span class="stat-label">Late</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" style="color:var(--danger)">{{ $absentDays }}</span>
+            <span class="stat-label">Absent</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" style="color:var(--info)">{{ $leaveTaken }}</span>
+            <span class="stat-label">On Leave</span>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <h3 class="section-title">Quick Actions</h3>
+    <div class="action-list">
+        <a href="{{ route('employee.leave.index') }}" class="action-item">
+            <div class="action-icon" style="background:var(--warning-bg); color:var(--warning);">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:600; font-size:0.95rem;">Request Leave</div>
+                <div style="font-size:0.75rem; color:var(--muted);">Apply for sick or casual leave</div>
+            </div>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--line)"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <a href="{{ route('employee.attendance.index') }}" class="action-item">
+            <div class="action-icon" style="background:var(--info-bg); color:var(--info);">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:600; font-size:0.95rem;">Attendance History</div>
+                <div style="font-size:0.75rem; color:var(--muted);">View your monthly logs</div>
+            </div>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--line)"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+    </div>
+
+    <!-- Today's Activity -->
+    <div class="card">
+        <div class="section-title" style="margin-bottom:1.25rem;">
+            <span>Today's Activity</span>
+            <span style="font-size:0.75rem; color:var(--muted); font-weight:400;">{{ now()->format('H:i') }}</span>
+        </div>
+        
+        <div class="timeline-container">
+            @php 
+                $scannedLogs = collect($timelineLogs ?? [])->filter(fn($l) => $l['scanned']); 
+            @endphp
+            
+            @forelse($scannedLogs as $log)
+                <div class="timeline-item">
+                    <div class="timeline-dot active"></div>
+                    <div style="font-weight:600; font-size:0.9rem; color:var(--ink);">{{ $log['label'] }}</div>
+                    <div style="font-size:0.75rem; color:var(--muted);">{{ $log['time'] }}</div>
+                </div>
+            @empty
+                <div style="text-align:center; padding:1rem 0; color:var(--muted); font-size:0.85rem;">
+                    No activity recorded yet for today.
+                </div>
+            @endforelse
+            
+            @if($scannedLogs->count() > 0 && $scannedLogs->count() < 4)
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div style="font-weight:500; font-size:0.9rem; color:var(--muted);">Next Scan</div>
+                    <div style="font-size:0.75rem; color:var(--muted);">Upcoming</div>
+                </div>
+            @endif
+        </div>
+    </div>
+
 </x-layouts.employee>

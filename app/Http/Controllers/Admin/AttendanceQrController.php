@@ -52,4 +52,11 @@ class AttendanceQrController extends Controller
             ['Content-Type' => 'image/svg+xml']
         );
     }
+
+    public function print(AttendanceQrToken $token)
+    {
+        abort_if(! $token->is_active, 404);
+
+        return view('admin.qr.print', compact('token'));
+    }
 }

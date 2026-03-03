@@ -71,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/attendance-qr', [AttendanceQrController::class, 'index'])->name('attendance-qr.index');
         Route::post('/attendance-qr', [AttendanceQrController::class, 'generate'])->name('attendance-qr.generate');
         Route::get('/attendance-qr/{token}/image', [AttendanceQrController::class, 'qr'])->name('attendance-qr.image');
+        Route::get('/attendance-qr/{token}/print', [AttendanceQrController::class, 'print'])->name('attendance-qr.print');
 
         Route::resource('schedules', ScheduleController::class)->except(['show']);
 

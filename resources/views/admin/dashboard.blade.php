@@ -1,118 +1,234 @@
 <x-layouts.admin>
-    <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-                <h2 class="text-2xl font-bold tracking-tight text-slate-800">Dashboard Overview</h2>
-                <p class="mt-1 text-sm text-slate-500">Daily snapshot of attendance, leave activity, and payroll impact.</p>
+    <!-- Welcome & Date -->
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-3xl font-bold tracking-tight text-slate-800">Hello, {{ auth()->user()->name }} 👋</h2>
+            <p class="mt-1 text-slate-500">Here's what's happening in your organization today.</p>
+        </div>
+        <div class="flex items-center gap-2 rounded-xl bg-white p-2 shadow-sm border border-slate-100">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <i class="fa-regular fa-calendar text-lg"></i>
             </div>
-            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                {{ now()->format('d M Y') }}
-            </span>
+            <div class="px-2">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Today</p>
+                <p class="text-sm font-bold text-slate-700">{{ now()->format('d M Y') }}</p>
+            </div>
         </div>
     </div>
 
     <!-- Stats Grid -->
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <small class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Employees</small>
-            <h4 class="mt-2 text-3xl font-bold text-slate-800">{{ $totalEmployees }}</h4>
+    <div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-5">
+        
+        <!-- Total Employees -->
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 group hover:border-blue-500/30 transition-all duration-300">
+            <div class="flex justify-between items-start z-10 relative">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Total Employees</p>
+                    <h3 class="mt-2 text-3xl font-bold text-slate-800">{{ $totalEmployees }}</h3>
+                </div>
+                <div class="h-10 w-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
         </div>
-        <div class="rounded-2xl border border-green-200 bg-white p-5 shadow-sm">
-            <small class="text-xs font-semibold uppercase tracking-wider text-slate-500">Present Today</small>
-            <h4 class="mt-2 text-3xl font-bold text-green-600">{{ $todayAttendance }}</h4>
+
+        <!-- Present -->
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 group hover:border-green-500/30 transition-all duration-300">
+            <div class="flex justify-between items-start z-10 relative">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Present Today</p>
+                    <h3 class="mt-2 text-3xl font-bold text-slate-800">{{ $todayAttendance }}</h3>
+                </div>
+                <div class="h-10 w-10 bg-green-50 rounded-full flex items-center justify-center text-green-500 group-hover:bg-green-100 transition-colors">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+            </div>
         </div>
-        <div class="rounded-2xl border border-orange-200 bg-white p-5 shadow-sm">
-            <small class="text-xs font-semibold uppercase tracking-wider text-slate-500">Late Today</small>
-            <h4 class="mt-2 text-3xl font-bold text-orange-500">{{ $lateEmployeesCount }}</h4>
+
+        <!-- Late -->
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 group hover:border-orange-500/30 transition-all duration-300">
+            <div class="flex justify-between items-start z-10 relative">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Late Arrivals</p>
+                    <h3 class="mt-2 text-3xl font-bold text-slate-800">{{ $lateEmployeesCount }}</h3>
+                </div>
+                <div class="h-10 w-10 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 group-hover:bg-orange-100 transition-colors">
+                    <i class="fa-solid fa-user-clock"></i>
+                </div>
+            </div>
         </div>
-        <div class="rounded-2xl border border-blue-200 bg-white p-5 shadow-sm">
-            <small class="text-xs font-semibold uppercase tracking-wider text-slate-500">Leave Today</small>
-            <h4 class="mt-2 text-3xl font-bold text-blue-500">{{ $onLeaveToday }}</h4>
+
+        <!-- On Leave -->
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 group hover:border-pink-500/30 transition-all duration-300">
+            <div class="flex justify-between items-start z-10 relative">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">On Leave</p>
+                    <h3 class="mt-2 text-3xl font-bold text-slate-800">{{ $onLeaveToday }}</h3>
+                </div>
+                <div class="h-10 w-10 bg-pink-50 rounded-full flex items-center justify-center text-pink-500 group-hover:bg-pink-100 transition-colors">
+                    <i class="fa-solid fa-plane-departure"></i>
+                </div>
+            </div>
         </div>
-        <div class="rounded-2xl border border-slate-200 bg-slate-900 p-5 shadow-sm sm:col-span-2 xl:col-span-1">
-            <small class="text-xs font-semibold uppercase tracking-wider text-slate-300">Monthly Payroll</small>
-            <h4 class="mt-2 text-3xl font-bold text-white">${{ number_format($monthlyPayrollCost,2) }}</h4>
+
+        <!-- Payroll -->
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 group hover:border-indigo-500/30 transition-all duration-300 sm:col-span-2 xl:col-span-1">
+            <div class="flex justify-between items-start z-10 relative">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Est. Payroll</p>
+                    <h3 class="mt-2 text-2xl font-bold text-slate-800">${{ number_format($monthlyPayrollCost,0) }}<span class="text-sm font-normal text-slate-400">.00</span></h3>
+                </div>
+                <div class="h-10 w-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                   <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-8">
         <!-- Chart -->
         <div class="lg:col-span-2">
-            <div class="h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div class="mb-4 flex items-center justify-between">
-                    <h6 class="text-lg font-bold text-slate-800">Monthly Attendance</h6>
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">This Month</span>
+            <div class="h-full rounded-2xl bg-white p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100">
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Attendance Overview</h3>
+                        <p class="text-sm text-slate-500">Monthly attendance trends</p>
+                    </div>
+                   <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
+                            <span class="h-1.5 w-1.5 rounded-full bg-blue-600"></span> Present
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                            <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> Absent
+                        </span>
+                   </div>
                 </div>
-                <div class="relative h-72 w-full">
+                <div class="relative h-80 w-full" >
                     <canvas id="attendanceChart"></canvas>
                 </div>
-                @unless($hasMonthlyAttendanceData)
-                    <p class="mt-3 text-sm text-slate-500">No attendance records yet for this month.</p>
+                 @unless($hasMonthlyAttendanceData)
+                    <div class="flex flex-col items-center justify-center py-10 text-center">
+                        <div class="rounded-full bg-slate-50 p-3 text-slate-400 mb-3">
+                            <i class="fa-solid fa-chart-simple text-xl"></i>
+                        </div>
+                        <p class="text-sm text-slate-500">No attendance data available for this month yet.</p>
+                    </div>
                 @endunless
             </div>
         </div>
         
         <!-- Late Employees -->
         <div class="lg:col-span-1">
-            <div class="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 p-5">
-                    <h6 class="text-lg font-bold text-slate-800">Late Employees Today</h6>
+            <div class="flex h-full flex-col rounded-2xl bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100">
+                <div class="border-b border-slate-50 p-5 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-800">Late Today</h3>
+                    <span class="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-600 text-xs font-bold">{{ $lateEmployees->count() }}</span>
                 </div>
-                <div class="overflow-x-auto flex-1">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
-                            <tr>
-                                <th class="px-5 py-3 font-medium">Employee</th>
-                                <th class="px-5 py-3 font-medium text-right">Late (min)</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                        @forelse($lateEmployees as $row)
-                            <tr class="hover:bg-slate-50/50">
-                                <td class="px-5 py-3 font-medium text-slate-800">{{ $row->employee->user->name }}</td>
-                                <td class="px-5 py-3 text-right text-orange-600 font-semibold">{{ $row->late_minutes }}m</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="2" class="px-5 py-8 text-center text-slate-500 text-sm">No late records today</td></tr>
-                        @endforelse
-                        </tbody>
-                    </table>
+                <div class="overflow-y-auto flex-1 max-h-[360px] p-2 custom-scrollbar">
+                    @forelse($lateEmployees as $row)
+                        <div class="flex items-center justify-between p-3 mb-2 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm">
+                                    {{ substr($row->employee->user->name, 0, 1) }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-800">{{ $row->employee->user->name }}</p>
+                                    <p class="text-xs text-slate-500">{{ $row->employee->department->name ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-sm font-bold text-orange-500">{{ $row->late_minutes }}m</span>
+                                <span class="text-[10px] uppercase text-slate-400 font-semibold">Late</span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="flex flex-col items-center justify-center h-full py-10 text-center">
+                             <div class="rounded-full bg-green-50 p-3 text-green-500 mb-3">
+                                <i class="fa-regular fa-clock text-xl"></i>
+                            </div>
+                            <p class="text-sm font-medium text-slate-800">On Time!</p>
+                            <p class="text-xs text-slate-500 mt-1">No employees matches late criteria today.</p>
+                        </div>
+                    @endforelse
                 </div>
+                 @if($lateEmployees->count() > 5)
+                <div class="p-3 border-t border-slate-50 text-center">
+                    <a href="#" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View All</a>
+                </div>
+                @endif
             </div>
         </div>
-
+    </div>
+    
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-1">
         <!-- Pending Leaves -->
-        <div class="lg:col-span-3">
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 p-5">
-                    <h6 class="text-lg font-bold text-slate-800">Pending Leave Requests</h6>
+        <div class="lg:col-span-1">
+            <div class="overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100">
+                <div class="border-b border-slate-50 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                         <h3 class="text-lg font-bold text-slate-800">Pending Leave Requests</h3>
+                         <p class="text-sm text-slate-500">Review and approve employee time off</p>
+                    </div>
+                    <a href="{{ route('admin.leave-requests.index') }}" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                        View All Requests <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                        <thead class="bg-slate-50/50 text-xs uppercase text-slate-500 font-semibold mobile-hidden">
                             <tr>
-                                <th class="px-6 py-3 font-medium">Employee</th>
-                                <th class="px-6 py-3 font-medium">Type</th>
-                                <th class="px-6 py-3 font-medium">Date Range</th>
-                                <th class="px-6 py-3 font-medium">Status</th>
-                                <th class="px-6 py-3 font-medium text-right">Action</th>
+                                <th class="px-6 py-4">Employee</th>
+                                <th class="px-6 py-4">Leave Type</th>
+                                <th class="px-6 py-4">Duration</th>
+                                <th class="px-6 py-4 text-center">Status</th>
+                                <th class="px-6 py-4 text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-slate-50">
                         @forelse($pendingLeaves as $leave)
-                            <tr class="hover:bg-slate-50/50">
-                                <td class="px-6 py-4 font-medium text-slate-800">{{ $leave->employee->user->name }}</td>
-                                <td class="px-6 py-4 text-slate-600">{{ $leave->leaveType->name }}</td>
-                                <td class="px-6 py-4 text-slate-600">{{ $leave->start_date->format('M d, Y') }} - {{ $leave->end_date->format('M d, Y') }}</td>
+                            <tr class="hover:bg-slate-50/80 transition-colors group">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 ring-1 ring-inset ring-orange-600/20">Pending</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-9 w-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                                             {{ substr($leave->employee->user->name, 0, 1) }}
+                                        </div>
+                                        <span class="font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">{{ $leave->employee->user->name }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">
+                                        {{ $leave->leaveType->name }}
+                                     </span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-600">
+                                    <div class="flex flex-col">
+                                        <span class="font-medium text-slate-700">{{ $leave->start_date->format('M d, Y') }}</span>
+                                        <span class="text-xs text-slate-400">to {{ $leave->end_date->format('M d, Y') }} ({{ $leave->days }} days)</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-yellow-50 px-2.5 py-1 text-xs font-semibold text-yellow-600 border border-yellow-100">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-yellow-500 animate-pulse"></span> Pending
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a class="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors" href="{{ route('admin.leave-requests.index') }}">Review &rarr;</a>
+                                     <a href="{{ route('admin.leave-requests.index') }}" class="text-slate-400 hover:text-blue-600 transition-colors">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </a>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="px-6 py-8 text-center text-slate-500">No pending leave requests</td></tr>
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <div class="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-3">
+                                            <i class="fa-regular fa-folder-open text-xl"></i>
+                                        </div>
+                                        <p class="text-slate-500 font-medium">No pending requests</p>
+                                        <p class="text-xs text-slate-400">All caught up! New requests will appear here.</p>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforelse
                         </tbody>
                     </table>

@@ -8,11 +8,16 @@
     <title>{{ config('app.name', 'HRM') }} - Admin</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=public-sans:400,500,600,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        [x-cloak] { display: none !important; }
+        .font-sans { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
 </head>
-<body class="h-full font-sans antialiased text-slate-800" x-data="{ sidebarOpen: false }">
+<body class="h-full font-sans antialiased text-slate-600 bg-slate-50" x-data="{ sidebarOpen: false }">
     
     <!-- Mobile sidebar backdrop -->
     <div x-show="sidebarOpen" class="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm lg:hidden" 
@@ -25,139 +30,184 @@
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-               class="fixed inset-y-0 left-0 z-50 w-64 bg-[#1f2937] text-slate-300 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:flex-shrink-0 flex flex-col border-r border-slate-700/50 shadow-xl">
+               class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:flex-shrink-0 flex flex-col shadow-2xl overflow-y-auto">
             
-            <div class="flex h-16 shrink-0 items-center px-6 bg-[#111827]">
-                <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 rounded-lg bg-blue-500 flex items-center justify-center text-white font-bold text-xl shadow-inner">
+            <!-- Brand -->
+            <div class="flex h-20 shrink-0 items-center px-6 bg-slate-950/50 border-b border-white/5">
+                <div class="flex items-center gap-3 w-full">
+                    <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg ring-1 ring-white/10">
                         {{ substr($uiCompanySetting->company_name ?? 'H', 0, 1) }}
                     </div>
-                    <span class="text-lg font-bold text-white tracking-wide truncate">{{ $uiCompanySetting->company_name ?? config('app.name') }}</span>
+                    <div class="flex flex-col overflow-hidden">
+                        <span class="text-lg font-bold text-white tracking-wide truncate leading-none">{{ $uiCompanySetting->company_name ?? config('app.name') }}</span>
+                        <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mt-1">Admin Portal</span>
+                    </div>
                 </div>
             </div>
 
-            <nav class="flex-1 space-y-1 px-3 py-4 overflow-y-auto mt-2 custom-scrollbar">
-                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Main Menu</p>
+            <!-- Navigation -->
+            <nav class="flex-1 space-y-1 px-4 py-6">
                 
-                <a href="{{ route('admin.dashboard') }}" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
-                    <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.dashboard') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                    Dashboard
+                <div class="mb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Dashboards</div>
+                
+                <a href="{{ route('admin.dashboard') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                    <i class="fa-solid fa-chart-pie w-5 h-5 mr-3 {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-slate-500 group-hover:text-white' }} transition-colors"></i>
+                    Overview
                 </a>
 
-                <a href="{{ route('admin.employees.index') }}" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.employees.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
-                    <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.employees.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">People</div>
+
+                <a href="{{ route('admin.employees.index') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.employees.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                    <i class="fa-solid fa-users w-5 h-5 mr-3 {{ request()->routeIs('admin.employees.*') ? 'text-white' : 'text-slate-500 group-hover:text-white' }} transition-colors"></i>
                     Employees
                 </a>
 
-                <details class="space-y-1 relative menu-disclosure" {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'open' : '' }}>
-                    <summary class="list-none cursor-pointer w-full group flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
+                <!-- Attendance Group -->
+                <div x-data="{ open: {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" type="button" class="w-full group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'text-white bg-white/5' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
                         <span class="flex items-center">
-                            <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <i class="fa-solid fa-clock w-5 h-5 mr-3 {{ request()->routeIs('admin.attendance.*') || request()->routeIs('admin.attendance-qr.*') ? 'text-blue-400' : 'text-slate-500 group-hover:text-white' }}"></i>
                             Attendance
                         </span>
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </summary>
-
-                    <div class="space-y-1 pl-10 pr-2 pt-1">
-                        <a href="{{ route('admin.attendance.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
-                            Attendance Logs
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="open ? 'rotate-90 text-slate-300' : 'text-slate-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                    <div x-show="open" x-collapse class="pl-4 space-y-1">
+                        <a href="{{ route('admin.attendance.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance.index') ? 'text-blue-400 bg-blue-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <span class="w-1.5 h-1.5 rounded-full mr-3 {{ request()->routeIs('admin.attendance.index') ? 'bg-blue-400' : 'bg-slate-600' }}"></span>
+                            Daily Logs
                         </a>
-
-                        <a href="{{ route('admin.attendance-qr.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance-qr.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
-                            QR Generator
+                        <a href="{{ route('admin.attendance-qr.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.attendance-qr.index') ? 'text-blue-400 bg-blue-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <span class="w-1.5 h-1.5 rounded-full mr-3 {{ request()->routeIs('admin.attendance-qr.index') ? 'bg-blue-400' : 'bg-slate-600' }}"></span>
+                            QR Manager
                         </a>
                     </div>
-                </details>
+                </div>
 
-                <details class="space-y-1 relative menu-disclosure" {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') || request()->routeIs('admin.overtime-requests.*') || request()->routeIs('admin.change-dayoff-requests.*') ? 'open' : '' }}>
-                    <summary class="list-none cursor-pointer w-full group flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') || request()->routeIs('admin.overtime-requests.*') || request()->routeIs('admin.change-dayoff-requests.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
+                <!-- Requests Group -->
+                <div x-data="{ open: {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') || request()->routeIs('admin.overtime-requests.*') || request()->routeIs('admin.change-dayoff-requests.*') ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" type="button" class="w-full group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') || request()->routeIs('admin.overtime-requests.*') || request()->routeIs('admin.change-dayoff-requests.*') ? 'text-white bg-white/5' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
                         <span class="flex items-center">
-                            <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') || request()->routeIs('admin.overtime-requests.*') || request()->routeIs('admin.change-dayoff-requests.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <i class="fa-solid fa-clipboard-check w-5 h-5 mr-3 {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') ? 'text-blue-400' : 'text-slate-500 group-hover:text-white' }}"></i>
                             Requests
                         </span>
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </summary>
-
-                    <div class="space-y-1 pl-10 pr-2 pt-1">
-                        <a href="{{ route('admin.leave-requests.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.leave-requests.*') || request()->routeIs('admin.leave-types.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="open ? 'rotate-90 text-slate-300' : 'text-slate-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                    <div x-show="open" x-collapse class="pl-4 space-y-1">
+                         <a href="{{ route('admin.leave-requests.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.leave-requests.*') ? 'text-blue-400 bg-blue-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <span class="w-1.5 h-1.5 rounded-full mr-3 {{ request()->routeIs('admin.leave-requests.*') ? 'bg-blue-400' : 'bg-slate-600' }}"></span>
                             Leave
                         </a>
-                        
-                        <a href="{{ route('admin.overtime-requests.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.overtime-requests.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                        <a href="{{ route('admin.overtime-requests.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.overtime-requests.*') ? 'text-blue-400 bg-blue-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <span class="w-1.5 h-1.5 rounded-full mr-3 {{ request()->routeIs('admin.overtime-requests.*') ? 'bg-blue-400' : 'bg-slate-600' }}"></span>
                             Overtime
                         </a>
-
-                        <a href="{{ route('admin.change-dayoff-requests.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.change-dayoff-requests.*') ? 'text-white bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                        <a href="{{ route('admin.change-dayoff-requests.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.change-dayoff-requests.*') ? 'text-blue-400 bg-blue-400/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <span class="w-1.5 h-1.5 rounded-full mr-3 {{ request()->routeIs('admin.change-dayoff-requests.*') ? 'bg-blue-400' : 'bg-slate-600' }}"></span>
                             Change Dayoff
                         </a>
                     </div>
-                </details>
-                
-                <a href="{{ route('admin.payrolls.index') }}" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.payrolls.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
-                    <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.payrolls.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+
+                <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Finance</div>
+
+                <a href="{{ route('admin.payrolls.index') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.payrolls.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                    <i class="fa-solid fa-money-bill-wave w-5 h-5 mr-3 {{ request()->routeIs('admin.payrolls.*') ? 'text-white' : 'text-slate-500 group-hover:text-white' }} transition-colors"></i>
                     Payroll
                 </a>
 
                 @if(auth()->user()->hasAnyRole(['Super Admin', 'Admin / HR']))
-                    <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Organization</p>
-                    <a href="{{ route('admin.branches.index') }}" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.branches.*') || request()->routeIs('admin.departments.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
-                        <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.branches.*') || request()->routeIs('admin.departments.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Administration</div>
+                    
+                    <a href="{{ route('admin.branches.index') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.branches.*') || request()->routeIs('admin.departments.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <i class="fa-solid fa-building w-5 h-5 mr-3 {{ request()->routeIs('admin.branches.*') || request()->routeIs('admin.departments.*') ? 'text-white' : 'text-slate-500 group-hover:text-white' }} transition-colors"></i>
                         Branches & Depts
                     </a>
 
-                    <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">System</p>
-                    <a href="{{ route('admin.settings.edit') }}" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.settings.*') ? 'bg-blue-600/10 text-blue-400' : 'hover:bg-slate-800 hover:text-white' }}">
-                        <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.settings.*') ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <a href="{{ route('admin.settings.edit') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.settings.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                        <i class="fa-solid fa-gear w-5 h-5 mr-3 {{ request()->routeIs('admin.settings.*') ? 'text-white' : 'text-slate-500 group-hover:text-white' }} transition-colors"></i>
                         Settings
                     </a>
                 @endif
+                
+                <div class="mt-8 pt-8 border-t border-white/5 px-6">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="flex items-center text-slate-400 hover:text-white text-sm font-medium transition-colors">
+                            <i class="fa-solid fa-arrow-right-from-bracket mr-3"></i>
+                            Sign Out
+                        </button>
+                    </form>
+                </div>
             </nav>
         </aside>
 
         <!-- Main Content area -->
         <div class="flex flex-1 flex-col overflow-hidden">
             <!-- Topbar -->
-            <header class="flex h-16 flex-shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 shadow-sm z-10">
+            <header class="flex h-20 flex-shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm z-20">
                 <div class="flex items-center">
-                    <button @click="sidebarOpen = true" class="text-slate-500 hover:text-slate-700 lg:hidden mr-4 focus:outline-none">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    <button @click="sidebarOpen = true" class="text-slate-500 hover:text-slate-800 lg:hidden mr-6 focus:outline-none transition-colors">
+                        <i class="fa-solid fa-bars text-xl"></i>
                     </button>
-                    <div>
-                        <h1 class="text-lg font-semibold text-slate-800">Administrator Panel</h1>
-                    </div>
+                    
+                    <!-- Breadcrumbs (Simplified) -->
+                     <h1 class="text-xl font-bold text-slate-800 tracking-tight">
+                        @if(request()->routeIs('admin.dashboard')) Dashboard
+                        @elseif(request()->routeIs('admin.employees.*')) Employees
+                        @elseif(request()->routeIs('admin.attendance.*')) Attendance
+                        @elseif(request()->routeIs('admin.payrolls.*')) Payroll
+                        @else {{ config('app.name') }} @endif
+                    </h1>
                 </div>
                 
-                <div class="flex items-center gap-4">
-                    <div class="hidden sm:block text-right mr-2">
-                        <div class="text-sm font-medium text-slate-800">{{ auth()->user()->name }}</div>
-                        <div class="text-xs text-slate-500">{{ auth()->user()->roles->first()->name ?? 'User' }}</div>
-                    </div>
+                <div class="flex items-center gap-6">
+                    <!-- Notifications (Placeholder) -->
+                    <button class="relative text-slate-400 hover:text-slate-600 transition-colors">
+                        <i class="fa-regular fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    </button>
 
-                    <a href="{{ route('profile.edit') }}" class="hidden sm:inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        Edit Profile
-                    </a>
-
-                    <a href="{{ route('profile.edit') }}#password-section" class="hidden sm:inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        Change Password
-                    </a>
-
-                    <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            Logout
-                        </button>
-                    </form>
-                    
+                    <!-- Profile Dropdown -->
                     <div class="relative" x-data="{ userMenuOpen: false }">
-                        <button @click="userMenuOpen = !userMenuOpen" @click.away="userMenuOpen = false" class="flex items-center justify-center h-9 w-9 rounded-full bg-slate-100 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <button @click="userMenuOpen = !userMenuOpen" @click.away="userMenuOpen = false" class="flex items-center gap-3 focus:outline-none">
+                            <div class="text-right hidden md:block">
+                                <div class="text-sm font-bold text-slate-800">{{ auth()->user()->name }}</div>
+                                <div class="text-xs text-slate-500">{{ auth()->user()->roles->first()->name ?? 'User' }}</div>
+                            </div>
+                            <div class="h-10 w-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=0D8ABC&color=fff" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
                         </button>
                         
-                        <div x-show="userMenuOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50 hidden" :class="{ 'hidden': !userMenuOpen }">
-                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Profile</a>
+                        <div x-show="userMenuOpen" x-cloak
+                             x-transition:enter="transition ease-out duration-100" 
+                             x-transition:enter-start="transform opacity-0 scale-95" 
+                             x-transition:enter-end="transform opacity-100 scale-100" 
+                             x-transition:leave="transition ease-in duration-75" 
+                             x-transition:leave-start="transform opacity-100 scale-100" 
+                             x-transition:leave-end="transform opacity-0 scale-95" 
+                             class="absolute right-0 mt-2 w-56 transform rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 py-2 z-50">
+                            
+                            <div class="px-4 py-3 border-b border-slate-100 md:hidden">
+                                <div class="text-sm font-bold text-slate-800">{{ auth()->user()->name }}</div>
+                                <div class="text-xs text-slate-500">{{ auth()->user()->email }}</div>
+                            </div>
+
+                            <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                <i class="fa-regular fa-user w-5 mr-2 text-slate-400"></i> Profile
+                            </a>
+                            <a href="{{ route('profile.edit') }}#password-section" class="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-lock w-5 mr-2 text-slate-400"></i> Security
+                            </a>
+                            
+                            <div class="border-t border-slate-100 my-1"></div>
+                            
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Sign out</button>
+                                <button type="submit" class="flex w-full items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                    <i class="fa-solid fa-arrow-right-from-bracket w-5 mr-2 opacity-70"></i> Sign out
+                                </button>
                             </form>
                         </div>
                     </div>

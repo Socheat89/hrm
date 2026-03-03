@@ -1,173 +1,255 @@
-<x-layouts.employee page-title="My Salary" page-description="Review monthly payroll, status, and downloadable salary slips.">
+<x-layouts.employee page-title="My Salary" :back-url="route('employee.dashboard')">
+
+    <script src="//unpkg.com/alpinejs" defer></script>
+
     <style>
-        .salary-hero {
-            border-radius: 20px;
-            padding: 1.4rem 1.3rem;
-            margin-bottom: 1.2rem;
-            background: linear-gradient(135deg, #1e3a5f 0%, #2d6ec0 100%);
-            color: #fff;
+        [x-cloak] { display: none !important; }
+
+        /* Salary Hero */
+        .salary-card {
+            background: linear-gradient(135deg, var(--brand) 0%, #1e40af 100%);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            color: white;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(20,50,90,0.22);
+            box-shadow: var(--shadow-xl);
+            margin-bottom: 2rem;
         }
-        .salary-hero::before {
-            content:'';position:absolute;top:-40px;right:-40px;
-            width:150px;height:150px;background:rgba(255,255,255,0.08);border-radius:50%;
+        .salary-card::before {
+            content: ''; position: absolute; top: -50%; right: -20%;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            border-radius: 50%;
         }
-        .salary-hero::after {
-            content:'';position:absolute;bottom:-25px;left:10px;
-            width:100px;height:100px;background:rgba(255,255,255,0.05);border-radius:50%;
+        
+        .salary-label {
+            font-size: 0.8rem; font-weight: 600; opacity: 0.9;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
         }
-        .salary-hero-inner { position:relative;z-index:1; }
-        .salary-hero small { font-size:.72rem;font-weight:600;opacity:.75;text-transform:uppercase;letter-spacing:.07em; }
-        .salary-hero h2 { font-family:'Sora','Inter',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.04em;margin:.2rem 0 .1rem; }
-        .salary-hero p { font-size:.8rem;opacity:.8;margin:0; }
+        .salary-amount {
+            font-family: 'Sora', sans-serif;
+            font-size: 2.5rem; font-weight: 800;
+            line-height: 1; letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+        .salary-sub { font-size: 0.85rem; opacity: 0.8; }
 
-        .payroll-list { display:grid;gap:.75rem; }
-        .payroll-item {
-            background:#fff;
-            border:1px solid #dce8f6;
-            border-radius:16px;
-            overflow:hidden;
-            box-shadow:0 2px 8px rgba(13,31,53,.06);
-            transition:transform .18s,box-shadow .18s;
+        /* Listing */
+        .list-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem;
         }
-        .payroll-item:hover { transform:translateY(-2px);box-shadow:0 8px 22px rgba(13,31,53,.11); }
-        .payroll-item-header {
-            display:flex;justify-content:space-between;align-items:flex-start;
-            padding:.9rem 1rem;gap:.75rem;
-        }
-        .payroll-period { font-family:'Sora','Inter',sans-serif;font-size:.92rem;font-weight:700;color:#0d1f35;margin:0 0 .2rem; }
-        .payroll-net { font-family:'Sora','Inter',sans-serif;font-size:1.35rem;font-weight:800;color:#0d7a47;letter-spacing:-.03em;margin:0; }
-        .payroll-net-label { font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#7a8fa4;margin:0 0 .1rem; }
-
-        .pay-status {
-            border-radius:8px;font-size:.7rem;font-weight:700;
-            padding:.26rem .6rem;border:1px solid transparent;
-            text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;
-        }
-        .pay-status.paid    { background:#dcfce7;color:#166534;border-color:#bbf7d0; }
-        .pay-status.pending { background:#fef9c3;color:#854d0e;border-color:#fef08a; }
-
-        .payroll-item-footer {
-            border-top:1px solid #f0f5fa;
-            padding:.65rem 1rem;
-            display:flex;gap:.5rem;align-items:center;
+        .list-title { font-size: 1rem; font-weight: 700; color: var(--ink); }
+        .list-count { 
+            font-size: 0.75rem; font-weight: 600; 
+            padding: 0.2rem 0.6rem; background: var(--surface); 
+            border-radius: 50px; color: var(--muted); 
         }
 
-        .modal-salary .modal-content {
-            border:1px solid #d5e3f5;
-            border-radius:18px;
-            overflow:hidden;
+        .payslip-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s;
         }
-        .modal-salary .modal-header {
-            background: linear-gradient(135deg,#1e3a5f,#2d6ec0);
-            color:#fff;border-bottom:0;padding:1rem 1.2rem;
+        .payslip-card:hover { transform: translateY(-2px); }
+
+        .payslip-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 1rem;
         }
-        .modal-salary .modal-header .btn-close { filter:invert(1) brightness(2); }
-        .modal-salary .modal-title { font-family:'Sora','Inter',sans-serif;font-weight:700;font-size:.95rem; }
-        .modal-salary .modal-body { padding:0; }
-        .pay-detail-row {
-            display:flex;justify-content:space-between;align-items:center;
-            padding:.7rem 1.2rem;border-bottom:1px solid #f0f5fa;font-size:.85rem;
+        .payslip-month { font-family: 'Sora'; font-weight: 700; color: var(--ink); font-size: 1.1rem; }
+        .payslip-date { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+        .status-badge {
+            font-size: 0.7rem; font-weight: 700;
+            padding: 0.3rem 0.7rem; border-radius: 50px;
+            text-transform: uppercase;
         }
-        .pay-detail-row:last-child { border:0; }
-        .pay-detail-row.total {
-            background:#f7fbff;font-weight:700;
-            border-top:2px solid #dce8f6;font-size:.9rem;color:#0d7a47;
+        .status-paid { background: #dcfce7; color: #166534; }
+        .status-pending { background: #fef9c3; color: #a16207; }
+
+        .payslip-body {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding-top: 1rem;
+            border-top: 1px solid var(--surface-soft);
         }
-        .pay-detail-row span { color:#546270; }
-        .pay-detail-row strong { color:#0d1f35; }
-        .empty-state {
-            text-align:center;padding:3rem 1rem;
-            border:1px dashed #c5d8f0;border-radius:16px;background:#f8fbff;
+        
+        .net-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; }
+        .net-amount { font-family: 'Sora'; font-size: 1.4rem; font-weight: 800; color: var(--ink); line-height: 1; margin-top: 0.3rem; }
+
+        .action-btns { display: flex; gap: 0.5rem; }
+        .btn-icon-soft {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: var(--surface);
+            color: var(--ink);
+            display: flex; align-items: center; justify-content: center;
+            border: none; cursor: pointer;
+            transition: background 0.2s;
         }
+        .btn-icon-soft:hover { background: var(--line); }
+        .btn-action-primary {
+            padding: 0 1rem; height: 36px;
+            border-radius: 10px;
+            background: var(--ink); color: #fff;
+            font-size: 0.8rem; font-weight: 600;
+            display: flex; align-items: center; gap: 0.4rem;
+            text-decoration: none; border: none;
+        }
+
+        /* Modal / Sheet */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(2px);
+            z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-open { opacity: 1; pointer-events: auto; }
+        
+        .modal-card {
+            background: #fff;
+            width: 90%; max-width: 400px;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-2xl);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-open .modal-card { transform: scale(1); }
+
+        .modal-header {
+            background: var(--surface);
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--line);
+        }
+        .modal-title { font-family: 'Sora'; font-weight: 700; font-size: 1.1rem; color: var(--ink); }
+        
+        .detail-list { padding: 1.5rem; }
+        .detail-row {
+            display: flex; justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+        .detail-row span { color: var(--muted); }
+        .detail-row strong { color: var(--ink); font-weight: 600; }
+        
+        .detail-row.total-row {
+            margin-top: 1rem; padding-top: 1rem;
+            border-top: 1px dashed var(--line);
+        }
+        .detail-row.total-row span { font-weight: 700; color: var(--ink); }
+        .detail-row.total-row strong { color: var(--brand); font-size: 1.1rem; }
     </style>
+    
+    <div x-data="{ openModal: false, selected: null }">
 
-    {{-- ── SALARY HERO ── --}}
-    <div class="salary-hero">
-        <div class="salary-hero-inner d-flex justify-content-between align-items-end">
-            <div>
-                <small>Base Salary</small>
-                <h2>${{ number_format($baseSalary, 2) }}</h2>
-                <p>Configured base · before bonus &amp; deductions</p>
-            </div>
-            <div style="text-align:right;flex-shrink:0">
-                <small>Payslips</small>
-                <div style="font-family:'Sora','Inter',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:-0.04em;line-height:1">{{ $payrolls->total() }}</div>
-                <small>total records</small>
-            </div>
+        <!-- Hero -->
+        <div class="salary-card">
+            <div class="salary-label">Current Base Salary</div>
+            <div class="salary-amount">${{ number_format($baseSalary, 2) }}</div>
+            <div class="salary-sub">Before taxes & deductions</div>
         </div>
-    </div>
 
-    {{-- ── PAYROLL LIST ── --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="section-title mb-0">Payroll History</h2>
-        <span class="badge-soft">{{ $payrolls->total() }} payslips</span>
-    </div>
+        <!-- List -->
+        <div class="list-header">
+            <div class="list-title">Payment History</div>
+            <div class="list-count">{{ $payrolls->total() }} Records</div>
+        </div>
 
-    <div class="payroll-list mb-4">
-        @forelse($payrolls as $payroll)
-        <article class="payroll-item">
-            <div class="payroll-item-header">
-                <div>
-                    <p class="payroll-period">{{ $payroll->period_start->format('F Y') }}</p>
-                    <p class="payroll-net-label">Net Salary</p>
-                    <p class="payroll-net">${{ number_format($payroll->net_salary, 2) }}</p>
-                </div>
-                <span class="pay-status {{ $payroll->status === 'paid' ? 'paid' : 'pending' }}">{{ $payroll->status }}</span>
-            </div>
-            <div class="payroll-item-footer">
-                <button type="button" class="btn-quiet" style="font-size:.77rem;padding:.48rem .85rem"
-                    data-bs-toggle="modal" data-bs-target="#salaryModal{{ $payroll->id }}">
-                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    Detail
-                </button>
-                <a href="{{ route('employee.salary.download', $payroll) }}" class="btn-brand" style="font-size:.77rem;padding:.48rem .9rem">
-                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Download PDF
-                </a>
-            </div>
-        </article>
-
-        {{-- Modal --}}
-        <div class="modal fade modal-salary" id="salaryModal{{ $payroll->id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ $payroll->period_start->format('F Y') }} — Payslip</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="d-flex flex-column gap-3">
+            @forelse($payrolls as $payroll)
+                @php
+                    // Pre-calculate data for Alpine
+                    $modalData = [
+                        'month' => $payroll->period_start->format('F Y'),
+                        'net' => number_format($payroll->net_salary, 2),
+                        'bonus' => number_format($payroll->bonus, 2),
+                        'deductions' => number_format($payroll->other_deduction, 2),
+                        'items' => $payroll->items->map(fn($i) => ['label'=>$i->label, 'amount'=>number_format($i->amount, 2)])
+                    ];
+                @endphp
+                <div class="payslip-card">
+                    <div class="payslip-header">
+                        <div>
+                            <div class="payslip-month">{{ $payroll->period_start->format('F Y') }}</div>
+                            <div class="payslip-date">Period: {{ $payroll->period_start->format('d') }} - {{ $payroll->period_end->format('d M') }}</div>
+                        </div>
+                        <div class="status-badge {{ $payroll->status === 'paid' ? 'status-paid' : 'status-pending' }}">
+                            {{ $payroll->status }}
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        @foreach($payroll->items as $item)
-                        <div class="pay-detail-row">
-                            <span>{{ $item->label }}</span>
-                            <strong>${{ number_format($item->amount, 2) }}</strong>
+                    
+                    <div class="payslip-body">
+                        <div>
+                            <div class="net-label">Net Pay</div>
+                            <div class="net-amount">${{ number_format($payroll->net_salary, 2) }}</div>
                         </div>
-                        @endforeach
-                        <div class="pay-detail-row">
-                            <span>Bonus</span>
-                            <strong>${{ number_format($payroll->bonus, 2) }}</strong>
-                        </div>
-                        <div class="pay-detail-row">
-                            <span>Other Deductions</span>
-                            <strong style="color:#b53535">-${{ number_format($payroll->other_deduction, 2) }}</strong>
-                        </div>
-                        <div class="pay-detail-row total">
-                            <span style="color:#0d7a47;font-weight:800">Net Salary</span>
-                            <strong style="font-size:1.05rem">${{ number_format($payroll->net_salary, 2) }}</strong>
+                        <div class="action-btns">
+                            <button class="btn-icon-soft" @click="selected = {{ json_encode($modalData) }}; openModal = true">
+                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                            <a href="{{ route('employee.salary.download', $payroll) }}" class="btn-action-primary">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                PDF
+                            </a>
                         </div>
                     </div>
                 </div>
+            @empty
+                <div style="text-align:center; padding:3rem 1rem; color:var(--muted)">No payment records found.</div>
+            @endforelse
+            
+            <div class="mt-3">{{ $payrolls->links() }}</div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-overlay" :class="openModal && 'modal-open'" @click.self="openModal = false">
+            <div class="modal-card" x-show="openModal" @click.away="openModal = false">
+                <template x-if="selected">
+                    <div>
+                        <div class="modal-header">
+                            <div class="modal-title" x-text="selected.month + ' Payslip'"></div>
+                        </div>
+                        <div class="detail-list">
+                            <!-- Items -->
+                            <template x-for="item in selected.items">
+                                <div class="detail-row">
+                                    <span x-text="item.label"></span>
+                                    <strong x-text="'$' + item.amount"></strong>
+                                </div>
+                            </template>
+                            
+                            <div class="detail-row">
+                                <span>Bonus</span>
+                                <strong x-text="'$' + selected.bonus"></strong>
+                            </div>
+                            <div class="detail-row">
+                                <span>Deductions</span>
+                                <strong class="text-danger" x-text="'-$' + selected.deductions"></strong>
+                            </div>
+                            
+                            <div class="detail-row total-row">
+                                <span>NET TOTAL</span>
+                                <strong x-text="'$' + selected.net"></strong>
+                            </div>
+                            
+                            <button class="btn-submit mt-4" @click="openModal = false">Close</button>
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
-        @empty
-        <div class="empty-state">
-            <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#a0b4c8" stroke-width="1.5" style="margin-bottom:.8rem"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            <p style="font-size:.85rem;color:#6b7d90;margin:0">No payroll records yet.</p>
-        </div>
-        @endforelse
+
     </div>
 
-    <div class="mb-3">{{ $payrolls->links() }}</div>
 </x-layouts.employee>

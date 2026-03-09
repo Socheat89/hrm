@@ -111,18 +111,18 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="relative h-10 w-10 shrink-0">
-                                            @if($employee->user->photo_path)
-                                                <img class="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm" src="{{ route('users.photo', $employee->user) }}" alt="{{ $employee->user->name }}" />
+                                            @if($employee->user?->photo_path)
+                                                <img class="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm" src="{{ route('users.photo', $employee->user) }}" alt="{{ $employee->user?->name }}" />
                                             @else
                                                 <div class="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm shadow-sm ring-2 ring-white">
-                                                    {{ strtoupper(substr($employee->user->name, 0, 1)) }}
+                                                    {{ strtoupper(substr($employee->user?->name ?? '?', 0, 1)) }}
                                                 </div>
                                             @endif
                                             <!-- Status Dot on Avatar -->
                                             <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white {{ $employee->employment_status === 'active' ? 'bg-green-500' : ($employee->employment_status === 'suspended' ? 'bg-orange-500' : 'bg-slate-400') }}"></span>
                                         </div>
                                         <div class="ml-4">
-                                            <div class="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">{{ $employee->user->name }}</div>
+                                            <div class="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">{{ $employee->user?->name ?? 'Unknown User' }}</div>
                                             <div class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                                                 <span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded border border-slate-200">ID: {{ $employee->employee_id }}</span>
                                             </div>

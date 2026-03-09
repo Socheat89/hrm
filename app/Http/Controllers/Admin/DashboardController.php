@@ -15,7 +15,7 @@ class DashboardController extends Controller
     public function __invoke()
     {
         $today = Carbon::today();
-        $cacheKey = 'admin_dashboard_summary_'.$today->format('Ymd');
+        $cacheKey = 'admin_dashboard_summary_'.auth()->user()->company_id.'_'.$today->format('Ymd');
 
         $summary = Cache::remember($cacheKey, 300, function () use ($today) {
             $lateEmployees = AttendanceSession::query()

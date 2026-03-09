@@ -11,11 +11,14 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    use \App\Traits\BelongsToCompany;
+
     use HasFactory;
     use HasRoles;
     use Notifiable;
 
     protected $fillable = [
+        'company_id',
         'name',
         'email',
         'branch_id',
@@ -23,6 +26,7 @@ class User extends Authenticatable
         'photo_path',
         'is_active',
         'password',
+        'is_super_admin',
     ];
 
     protected $hidden = [

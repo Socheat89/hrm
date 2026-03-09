@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => EnsureRole::class,
+            'company_subscription' => \App\Http\Middleware\CheckCompanySubscription::class,
+            'super_admin' => \App\Http\Middleware\CheckSuperAdmin::class,
         ]);
 
         $middleware->web(append: [

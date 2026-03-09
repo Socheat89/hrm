@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
+    use \App\Traits\BelongsToCompany;
+
     use HasFactory;
 
     protected $fillable = [

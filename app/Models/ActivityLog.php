@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivityLog extends Model
 {
+    use \App\Traits\BelongsToCompany;
+
     use HasFactory;
 
     protected $fillable = [

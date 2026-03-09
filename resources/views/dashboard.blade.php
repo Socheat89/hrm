@@ -1,164 +1,240 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-2xl text-slate-800 leading-tight">
-            {{ __('Dashboard Overview') }}
-        </h2>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="font-extrabold text-3xl text-slate-900 leading-tight">
+                    {{ __('Dashboard') }}
+                </h2>
+                <p class="text-slate-500 text-sm font-medium mt-1">Welcome back! Here's what's happening today.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days text-slate-400"></i>
+                    Mar 07, 2026
+                </button>
+                <button class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Employee
+                </button>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="space-y-6">
-        <!-- Overview Stats -->
+    <div class="space-y-8 pb-10">
+        <!-- Modern Stat Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Total Employees -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center sm:items-start text-center sm:text-left transition-transform hover:-translate-y-1">
-                <div class="p-3 rounded-full bg-blue-50 text-blue-600 mb-4 inline-flex items-center justify-center">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="text-slate-500 font-medium text-sm tracking-wide uppercase">Total Employees</h3>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">142</p>
+            <div class="bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-50/50 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-users text-lg"></i>
+                        </div>
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+12%</span>
+                    </div>
+                    <p class="text-slate-500 font-bold text-xs uppercase tracking-widest">Total Workforce</p>
+                    <h3 class="text-4xl font-extrabold text-slate-900 mt-2">1,284</h3>
+                    <p class="text-slate-400 text-xs mt-auto pt-4 border-t border-slate-50">84 active this month</p>
                 </div>
             </div>
 
             <!-- Present Today -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center sm:items-start text-center sm:text-left transition-transform hover:-translate-y-1">
-                <div class="p-3 rounded-full bg-green-50 text-green-600 mb-4 inline-flex items-center justify-center">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="text-slate-500 font-medium text-sm tracking-wide uppercase">Present Today</h3>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">128</p>
-                    <p class="text-sm font-medium text-green-600 mt-2">+2% from yesterday</p>
+            <div class="bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50/50 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-user-check text-lg"></i>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">94%</span>
+                    </div>
+                    <p class="text-slate-500 font-bold text-xs uppercase tracking-widest">Present Today</p>
+                    <h3 class="text-4xl font-extrabold text-slate-900 mt-2">1,120</h3>
+                    <p class="text-slate-400 text-xs mt-auto pt-4 border-t border-slate-50">164 remaining</p>
                 </div>
             </div>
 
             <!-- On Leave -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center sm:items-start text-center sm:text-left transition-transform hover:-translate-y-1">
-                <div class="p-3 rounded-full bg-orange-50 text-orange-600 mb-4 inline-flex items-center justify-center">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="text-slate-500 font-medium text-sm tracking-wide uppercase">On Leave</h3>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">12</p>
-                    <p class="text-sm font-medium text-orange-600 mt-2">5 approvals pending</p>
+            <div class="bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-orange-50/50 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-umbrella-beach text-lg"></i>
+                        </div>
+                        <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">8 Pending</span>
+                    </div>
+                    <p class="text-slate-500 font-bold text-xs uppercase tracking-widest">Active Leaves</p>
+                    <h3 class="text-4xl font-extrabold text-slate-900 mt-2">42</h3>
+                    <p class="text-slate-400 text-xs mt-auto pt-4 border-t border-slate-50">Return expected today: 3</p>
                 </div>
             </div>
 
-            <!-- Payroll Due -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center sm:items-start text-center sm:text-left transition-transform hover:-translate-y-1">
-                <div class="p-3 rounded-full bg-purple-50 text-purple-600 mb-4 inline-flex items-center justify-center">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="text-slate-500 font-medium text-sm tracking-wide uppercase">Next Payroll</h3>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">In 4 Days</p>
-                    <p class="text-sm font-medium text-slate-500 mt-2">Est. $45,200.00</p>
+            <!-- Payroll Total -->
+            <div class="bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-violet-50/50 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-wallet text-lg"></i>
+                        </div>
+                        <span class="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-lg">In 5 Days</span>
+                    </div>
+                    <p class="text-slate-500 font-bold text-xs uppercase tracking-widest">Monthly Payroll</p>
+                    <h3 class="text-4xl font-extrabold text-slate-900 mt-2">$24.8k</h3>
+                    <p class="text-slate-400 text-xs mt-auto pt-4 border-t border-slate-50">Est. Tax: $2.4k</p>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Recent Activity / Attendance -->
-            <div class="bg-white lg:col-span-2 rounded-xl shadow-sm border border-slate-200">
-                <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50 rounded-t-xl">
-                    <h3 class="font-bold text-lg text-slate-800">Recent Attendance Logs</h3>
-                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">View All</a>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Attendance Trends Mockup -->
+            <div class="bg-white lg:col-span-2 rounded-[32px] border border-slate-100 p-8 shadow-sm">
+                <div class="flex items-center justify-between mb-10">
+                    <div>
+                        <h3 class="text-xl font-extrabold text-slate-900">Attendance Trends</h3>
+                        <p class="text-slate-500 text-sm font-medium">Daily check-in volume for the last 7 days</p>
+                    </div>
+                    <select class="bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-600 focus:ring-2 focus:ring-blue-100 cursor-pointer">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                    </select>
                 </div>
-                <div class="p-0 overflow-x-auto">
-                    <table class="w-full text-sm text-left text-slate-500">
-                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 font-semibold tracking-wider">Employee</th>
-                                <th scope="col" class="px-6 py-3 font-semibold tracking-wider">Status</th>
-                                <th scope="col" class="px-6 py-3 font-semibold tracking-wider">Time In</th>
-                                <th scope="col" class="px-6 py-3 font-semibold tracking-wider">Time Out</th>
+                
+                <div class="flex items-end justify-between h-48 gap-3 mt-4">
+                    @foreach([45, 62, 85, 30, 95, 70, 88] as $height)
+                        <div class="flex-1 group relative">
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                {{ $height }}%
+                            </div>
+                            <div class="w-full bg-blue-50 rounded-t-xl group-hover:bg-blue-100 transition-colors" style="height: {{ $height }}%">
+                                <div class="w-full h-full bg-blue-600/10 rounded-t-xl"></div>
+                            </div>
+                            <div class="text-[10px] font-bold text-slate-400 text-center mt-3 uppercase tracking-tighter">Day {{ $loop->iteration }}</div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Quick Stats/Profile -->
+            <div class="bg-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl">
+                <div class="absolute top-0 right-0 w-40 h-40 bg-blue-600/20 rounded-full blur-[60px]"></div>
+                
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-16 h-16 rounded-[22px] border-2 border-blue-500/50 p-1">
+                            <img class="w-full h-full rounded-[18px] object-cover" src="https://ui-avatars.com/api/?name=Admin+User&background=3b82f6&color=fff" alt="Avatar">
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Phnom Penh office</h4>
+                            <p class="text-blue-400 text-xs font-medium uppercase tracking-widest">Main Branch</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6 mt-4">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-400 font-medium">Server Status</span>
+                            <span class="text-emerald-400 font-bold flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Operational
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-400 font-medium">Data Storage</span>
+                            <span class="text-slate-200 font-bold">4.2 GB / 10 GB</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-full w-[42%]"></div>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-400 font-medium">Active Tenants</span>
+                            <span class="text-slate-200 font-bold">128 Companies</span>
+                        </div>
+                    </div>
+
+                    <button class="mt-auto w-full py-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl text-sm font-bold transition-all backdrop-blur-sm">
+                        Enterprise Settings &rarr;
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Recent Activity Table -->
+            <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                <div class="p-8 pb-4 flex items-center justify-between">
+                    <h3 class="text-xl font-extrabold text-slate-900 px-2">Live Attendance</h3>
+                    <a href="#" class="text-blue-600 text-sm font-bold hover:underline transition-all">View Full Log</a>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-50">
+                                <th class="px-8 py-5">Employee</th>
+                                <th class="px-8 py-5 text-center">Status</th>
+                                <th class="px-8 py-5 text-right">Activity</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-6 py-4 flex items-center gap-3">
-                                    <img class="w-8 h-8 rounded-full border border-slate-200" src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=0D8ABC&color=fff" alt="Avatar">
+                        <tbody class="divide-y divide-slate-50">
+                            @foreach([
+                                ['Sarah Johnson', 'On Time', '08:42 AM', 'https://ui-avatars.com/api/?name=Sarah+J&background=E0F2FE&color=0369A1'],
+                                ['Michael Chen', 'Late', '09:15 AM', 'https://ui-avatars.com/api/?name=Michael+C&background=FEF3C7&color=B45309'],
+                                ['Emily Davis', 'On Time', '08:55 AM', 'https://ui-avatars.com/api/?name=Emily+D&background=DCFCE7&color=15803D'],
+                            ] as $row)
+                            <tr class="hover:bg-slate-50/50 transition-colors group">
+                                <td class="px-8 py-5 flex items-center gap-4">
+                                    <img src="{{ $row[3] }}" class="w-10 h-10 rounded-xl shadow-sm border border-slate-100" />
                                     <div>
-                                        <p class="font-semibold text-slate-800">Sarah Johnson</p>
-                                        <p class="text-xs text-slate-400">Marketing Dept</p>
+                                        <p class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{{ $row[0] }}</p>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Creative Team</p>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Checked In
+                                <td class="px-8 py-5 text-center">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {{ $row[1] == 'Late' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600' }}">
+                                        {{ $row[1] }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 font-medium text-slate-700">08:45 AM</td>
-                                <td class="px-6 py-4 text-slate-400">--:-- --</td>
+                                <td class="px-8 py-5 text-right">
+                                    <p class="text-sm font-bold text-slate-900">{{ $row[2] }}</p>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Check-in</p>
+                                </td>
                             </tr>
-                            <tr class="hover:bg-slate-50 transition-colors bg-white">
-                                <td class="px-6 py-4 flex items-center gap-3">
-                                    <img class="w-8 h-8 rounded-full border border-slate-200" src="https://ui-avatars.com/api/?name=Mike+Davis&background=F59E0B&color=fff" alt="Avatar">
-                                    <div>
-                                        <p class="font-semibold text-slate-800">Mike Davis</p>
-                                        <p class="text-xs text-slate-400">Engineering</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Late In
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 font-medium text-slate-700">09:15 AM</td>
-                                <td class="px-6 py-4 text-slate-400">--:-- --</td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-6 py-4 flex items-center gap-3">
-                                    <img class="w-8 h-8 rounded-full border border-slate-200" src="https://ui-avatars.com/api/?name=Alex+Carter&background=64748B&color=fff" alt="Avatar">
-                                    <div>
-                                        <p class="font-semibold text-slate-800">Alex Carter</p>
-                                        <p class="text-xs text-slate-400">Sales</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-500/10">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Checked Out
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 font-medium text-slate-700">08:00 AM</td>
-                                <td class="px-6 py-4 text-slate-700 font-medium">05:05 PM</td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Pending Approvals Widget -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
-                <div class="px-6 py-4 flex justify-between items-center border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
-                    <h3 class="font-bold text-lg text-slate-800">Pending Actions</h3>
-                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold ring-1 ring-inset ring-orange-600/20">
-                        2
-                    </span>
+            <!-- Pending Approvals -->
+            <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-xl font-extrabold text-slate-900">Pending Approvals</h3>
+                    <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] font-bold flex items-center justify-center">04</span>
                 </div>
-                <div class="p-6 space-y-4 flex-1">
-                    <!-- Item -->
-                    <div class="flex items-start gap-4 p-4 bg-orange-50/30 rounded-lg border border-orange-100/50 hover:bg-orange-50/50 transition-colors group relative">
-                        <div class="h-10 w-10 flex-shrink-0 bg-white shadow-sm rounded-full flex items-center justify-center border border-orange-100 text-orange-500">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+
+                <div class="space-y-4">
+                    @foreach(['Annual Leave', 'Work From Home', 'Medical Reimbursement'] as $request)
+                    <div class="p-6 bg-[#fafafa] rounded-[24px] border border-slate-100 hover:border-blue-200 transition-all group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">
+                                    <i class="fa-solid fa-file-invoice"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm">{{ $request }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Requested by Alex Ray</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-400">2h ago</span>
                         </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">Annual Leave Request</p>
-                            <p class="text-xs text-slate-500 mt-1">John Doe wants <span class="font-medium text-slate-700">3 Days</span></p>
-                            <p class="text-xs text-slate-400 mt-0.5">Mar 10 - Mar 12</p>
-                            <div class="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 flex-col">
-                                <!-- Hover quick actions could go here -->
-                            </div>
-                            <div class="flex gap-2 mt-3">
-                                <button class="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md font-medium shadow-sm transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-1 outline-none">Approve</button>
-                                <button class="text-xs bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 hover:text-slate-800 px-3 py-1.5 rounded-md font-medium shadow-sm transition-colors focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 outline-none">Decline</button>
-                            </div>
+                        <div class="flex items-center gap-2">
+                            <button class="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all">Approve</button>
+                            <button class="px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all">View</button>
                         </div>
                     </div>
-                </div>
-                 <div class="p-4 border-t border-slate-200 mt-auto bg-slate-50 rounded-b-xl text-center text-sm">
-                     <button class="font-medium text-blue-600 hover:text-blue-800 transition-colors focus:outline-none focus:underline">
-                         View all pending actions &rarr;
-                     </button>
+                    @endforeach
                 </div>
             </div>
         </div>

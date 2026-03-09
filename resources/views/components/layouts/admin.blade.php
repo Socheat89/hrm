@@ -246,6 +246,27 @@
 
             <!-- Main Content -->
             <main class="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8">
+                @php
+                    $currentCompany = auth()->user()?->company;
+                    $isExpiringSoon = false;
+                    $daysLeft = null;
+                    if ($currentCompany && $currentCompany->expiry_date) {
+                        $daysLeft = now()->diffInDays($currentCompany->expiry_date, false);
+                        $isExpiringSoon = $daysLeft >= 0 && $daysLeft <= 7;
+                    }
+                @endphp
+                @if ($isExpiringSoon)
+                    <div class="mb-6 rounded-xl bg-orange-50 p-4 border border-orange-200 shadow-sm flex items-start gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center border border-orange-200">
+                            <i class="fa-solid fa-triangle-exclamation text-orange-600 text-lg"></i>
+                        </div>
+                        <div class="flex-1 pt-0.5">
+                            <h3 class="text-sm font-bold text-orange-800">Subscription Expiring Soon</h3>
+                            <p class="text-sm font-medium text-orange-700 mt-1">Your company's subscription will expire in <strong>{{ floor($daysLeft) }} {{ floor($daysLeft) == 1 ? 'day' : 'days' }}</strong> (on {{ $currentCompany->expiry_date->format('M d, Y') }}). Please contact system administrator or support to renew your plan to avoid service interruption.</p>
+                        </div>
+                    </div>
+                @endif
+
                 @if (session('status') || session('success'))
                     <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800 border border-green-200 flex items-center shadow-sm" x-data="{ show: true }" x-show="show">
                         <svg class="w-5 h-5 mr-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>

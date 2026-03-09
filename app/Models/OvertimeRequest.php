@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class OvertimeRequest extends Model
 {
+    use \App\Traits\BelongsToCompany;
+
     use HasFactory;
 
     protected $fillable = [

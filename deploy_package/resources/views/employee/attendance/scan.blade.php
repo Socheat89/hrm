@@ -307,6 +307,28 @@ window.addEventListener('load', function () {
         setScanningUI(true);
         qrBoxEl.classList.add('visible');
         if(cancelBtn)cancelBtn.style.display='block';
+        setStatus('📷 Requesting camera access…');
+
+        // Explicitly request camera permission first to trigger browser prompt
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+            stream.getTracks().forEach(t => t.stop());
+        } catch(permErr) {
+            scanRunning=false;
+            setScanningUI(false);
+            qrBoxEl.classList.remove('visible');
+            if(cancelBtn)cancelBtn.style.display='none';
+            if(permErr.name==='NotAllowedError'||permErr.name==='PermissionDeniedError')
+                showMsg('Camera permission denied. Please allow camera access in browser settings.','danger');
+            else if(permErr.name==='NotFoundError')
+                showMsg('No camera found on this device.','danger');
+            else if(permErr.name==='NotReadableError')
+                showMsg('Camera is in use by another app.','danger');
+            else
+                showMsg('Cannot access camera: '+permErr.message,'danger');
+            return;
+        }
+
         setStatus('🎯 Point camera at the QR code…');
         if(!scanner) scanner=new Html5Qrcode('qrReader');
             await scanner.start(

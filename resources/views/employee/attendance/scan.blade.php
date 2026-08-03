@@ -397,6 +397,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if(isScanning) return; hideMsg();
         try{
             setScanMode(true); isScanning=true; qrStatus.textContent='Requesting camera access…';
+
+            // Explicitly request camera permission first to trigger browser prompt
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+                stream.getTracks().forEach(t => t.stop());
+            } catch(permErr) {
+                isScanning=false; setScanMode(false);
+                let msg='Could not access camera.';
+                if(permErr.name==='NotAllowedError') msg='Camera permission denied. Please allow camera access in browser settings.';
+                else if(permErr.name==='NotFoundError') msg='No camera found on this device.';
+                else if(permErr.name==='NotReadableError') msg='Camera is in use by another app.';
+                else if(location.protocol!=='https:'&&location.hostname!=='localhost') msg='HTTPS is required for camera.';
+                showMsg(msg,'error');
+                return;
+            }
+
             if(!scanner) scanner=new Html5Qrcode('qrReader');
             await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},
                 async decoded=>{
@@ -411,8 +427,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err){
             isScanning=false; setScanMode(false);
             let msg='Could not access camera.';
-            if(err.name==='NotAllowedError') msg='Camera permission denied.';
+            if(err.name==='NotAllowedError'||err==='NotAllowedError') msg='Camera permission denied. Please allow camera access in your browser settings.';
             else if(err.name==='NotFoundError') msg='No camera found.';
+            else if(err.name==='NotReadableError') msg='Camera is in use by another app.';
             else if(location.protocol!=='https:'&&location.hostname!=='localhost') msg='HTTPS is required for camera access.';
             showMsg(msg,'error');
         }
